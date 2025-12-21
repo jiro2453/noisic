@@ -22,8 +22,8 @@ struct ContentView: View {
 
                 Spacer()
 
-                // Ambient Sounds Grid
-                AmbientSoundsGrid()
+                // Ambient Sounds Carousel
+                AmbientSoundsCarousel()
 
                 Spacer()
 
@@ -91,27 +91,23 @@ struct NowPlayingView: View {
     }
 }
 
-struct AmbientSoundsGrid: View {
+struct AmbientSoundsCarousel: View {
     @EnvironmentObject var audioManager: AudioManager
-
-    let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
+    @State private var currentIndex = 0
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             Text("Ambient Sounds")
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
 
-            LazyVGrid(columns: columns, spacing: 16) {
-                ForEach(AmbientSound.allCases) { sound in
-                    AmbientSoundButton(
+            // Swipeable Cards
+            TabView(selection: $currentIndex) {
+                ForEach(Array(AmbientSound.allCases.enumerated()), id: \.element.id) { index, sound in
+                    AmbientSoundCard(
                         sound: sound,
-                        isSelected: audioManager.currentSound == sound && audioManager.isPlaying
+                        isPlaying: audioManager.currentSound == sound && audioManager.isPlaying
                     ) {
                         if audioManager.currentSound == sound && audioManager.isPlaying {
                             audioManager.stop()
@@ -119,36 +115,74 @@ struct AmbientSoundsGrid: View {
                             audioManager.play(sound: sound)
                         }
                     }
+                    .tag(index)
                 }
             }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            .frame(height: 280)
+
+            // Sound Name Indicator
+            Text(AmbientSound.allCases[currentIndex].displayName)
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
         }
     }
 }
 
-struct AmbientSoundButton: View {
+struct AmbientSoundCard: View {
     let sound: AmbientSound
-    let isSelected: Bool
+    let isPlaying: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: sound.icon)
-                    .font(.system(size: 30))
-                    .foregroundColor(isSelected ? .black : .white)
+            VStack(spacing: 24) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(isPlaying ? Color.white.opacity(0.2) : Color.white.opacity(0.1))
+                        .frame(width: 120, height: 120)
 
-                Text(sound.displayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(isSelected ? .black : .white)
+                    Image(systemName: sound.icon)
+                        .font(.system(size: 50))
+                        .foregroundColor(.white)
+                }
+
+                // Play/Pause Indicator
+                HStack(spacing: 8) {
+                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white)
+
+                    Text(isPlaying ? "Playing" : "Tap to Play")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 100)
+            .frame(height: 260)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(isSelected ? Color.white : Color.white.opacity(0.1))
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                isPlaying ? Color.white.opacity(0.25) : Color.white.opacity(0.12),
+                                isPlaying ? Color.white.opacity(0.15) : Color.white.opacity(0.08)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             )
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(isPlaying ? Color.white.opacity(0.4) : Color.white.opacity(0.2), lineWidth: 1)
+            )
+            .shadow(color: isPlaying ? Color.white.opacity(0.2) : Color.clear, radius: 10)
         }
+        .padding(.horizontal, 30)
     }
 }
 
