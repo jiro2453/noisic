@@ -10,11 +10,38 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
+    @State private var currentIndex = 0
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            // Background Video Carousel
+            TabView(selection: $currentIndex) {
+                ForEach(Array(AmbientSound.allCases.enumerated()), id: \.element.id) { index, sound in
+                    VideoPlayerView(videoName: sound.videoFileName)
+                        .tag(index)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .ignoresSafeArea()
+            .onChange(of: currentIndex) { newValue in
+                // Auto-play ambient sound when swiping
+                let sound = AmbientSound.allCases[newValue]
+                audioManager.play(sound: sound)
+            }
 
+            // Gradient overlay for better text visibility
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.6),
+                    Color.black.opacity(0.3),
+                    Color.black.opacity(0.6)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+
+            // Foreground Content
             VStack(spacing: 30) {
                 // Now Playing Section
                 NowPlayingView(musicInfo: musicInfoReader.musicInfo)
@@ -22,8 +49,18 @@ struct ContentView: View {
 
                 Spacer()
 
-                // Ambient Sounds Carousel
-                AmbientSoundsCarousel()
+                // Ambient Sound Name
+                VStack(spacing: 8) {
+                    Text(AmbientSound.allCases[currentIndex].displayName)
+                        .font(.system(size: 42, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 10)
+
+                    Text("Swipe to change")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.7))
+                        .shadow(color: .black.opacity(0.5), radius: 5)
+                }
 
                 Spacer()
 
@@ -32,6 +69,12 @@ struct ContentView: View {
                     .padding(.bottom, 40)
             }
             .padding(.horizontal, 20)
+        }
+        .onAppear {
+            // Auto-play first sound on launch
+            if !audioManager.isPlaying {
+                audioManager.play(sound: AmbientSound.allCases[0])
+            }
         }
     }
 }
@@ -47,31 +90,35 @@ struct NowPlayingView: View {
                     Image(uiImage: artwork)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 200, height: 200)
+                        .frame(width: 180, height: 180)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(radius: 10)
+                        .shadow(color: .black.opacity(0.5), radius: 20)
                 } else {
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 200, height: 200)
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 180, height: 180)
                         .overlay(
                             Image(systemName: "music.note")
-                                .font(.system(size: 60))
-                                .foregroundColor(.gray)
+                                .font(.system(size: 50))
+                                .foregroundColor(.white.opacity(0.5))
                         )
+                        .shadow(color: .black.opacity(0.5), radius: 20)
                 }
 
                 // Title and Artist
                 VStack(spacing: 4) {
                     Text(musicInfo.title ?? "Unknown")
-                        .font(.headline)
+                        .font(.title3)
+                        .fontWeight(.semibold)
                         .foregroundColor(.white)
                         .lineLimit(1)
+                        .shadow(color: .black.opacity(0.5), radius: 5)
 
                     Text(musicInfo.artist ?? "Unknown Artist")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white.opacity(0.8))
                         .lineLimit(1)
+                        .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .frame(maxWidth: 250)
             } else {
@@ -79,110 +126,17 @@ struct NowPlayingView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "music.note.list")
                         .font(.system(size: 50))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white.opacity(0.5))
+                        .shadow(color: .black.opacity(0.5), radius: 5)
 
                     Text("No Music Playing")
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.white.opacity(0.7))
+                        .shadow(color: .black.opacity(0.5), radius: 5)
                 }
-                .frame(height: 200)
+                .frame(height: 180)
             }
         }
-    }
-}
-
-struct AmbientSoundsCarousel: View {
-    @EnvironmentObject var audioManager: AudioManager
-    @State private var currentIndex = 0
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Ambient Sounds")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-
-            // Swipeable Cards
-            TabView(selection: $currentIndex) {
-                ForEach(Array(AmbientSound.allCases.enumerated()), id: \.element.id) { index, sound in
-                    AmbientSoundCard(
-                        sound: sound,
-                        isPlaying: audioManager.currentSound == sound && audioManager.isPlaying
-                    ) {
-                        if audioManager.currentSound == sound && audioManager.isPlaying {
-                            audioManager.stop()
-                        } else {
-                            audioManager.play(sound: sound)
-                        }
-                    }
-                    .tag(index)
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
-            .frame(height: 280)
-
-            // Sound Name Indicator
-            Text(AmbientSound.allCases[currentIndex].displayName)
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundColor(.white)
-        }
-    }
-}
-
-struct AmbientSoundCard: View {
-    let sound: AmbientSound
-    let isPlaying: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 24) {
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(isPlaying ? Color.white.opacity(0.2) : Color.white.opacity(0.1))
-                        .frame(width: 120, height: 120)
-
-                    Image(systemName: sound.icon)
-                        .font(.system(size: 50))
-                        .foregroundColor(.white)
-                }
-
-                // Play/Pause Indicator
-                HStack(spacing: 8) {
-                    Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white)
-
-                    Text(isPlaying ? "Playing" : "Tap to Play")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 260)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                isPlaying ? Color.white.opacity(0.25) : Color.white.opacity(0.12),
-                                isPlaying ? Color.white.opacity(0.15) : Color.white.opacity(0.08)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(isPlaying ? Color.white.opacity(0.4) : Color.white.opacity(0.2), lineWidth: 1)
-            )
-            .shadow(color: isPlaying ? Color.white.opacity(0.2) : Color.clear, radius: 10)
-        }
-        .padding(.horizontal, 30)
     }
 }
 
@@ -190,13 +144,14 @@ struct ControlsView: View {
     @EnvironmentObject var audioManager: AudioManager
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             // Volume Control
             if audioManager.isPlaying {
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
                     HStack {
                         Image(systemName: "speaker.fill")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.8))
+                            .shadow(color: .black.opacity(0.5), radius: 5)
 
                         Slider(
                             value: Binding(
@@ -206,26 +161,30 @@ struct ControlsView: View {
                             in: 0...1
                         )
                         .accentColor(.white)
+                        .shadow(color: .black.opacity(0.3), radius: 3)
 
                         Image(systemName: "speaker.wave.3.fill")
-                            .foregroundColor(.gray)
+                            .foregroundColor(.white.opacity(0.8))
+                            .shadow(color: .black.opacity(0.5), radius: 5)
                     }
+                    .padding(.horizontal, 4)
 
                     // Stop Button
                     Button(action: {
                         audioManager.stop()
                     }) {
-                        HStack {
-                            Image(systemName: "stop.fill")
-                            Text("Stop")
+                        HStack(spacing: 8) {
+                            Image(systemName: "stop.circle.fill")
+                            Text("Stop Ambient Sound")
                         }
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.red.opacity(0.8))
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color.red.opacity(0.7))
+                                .shadow(color: .black.opacity(0.5), radius: 10)
                         )
                     }
                 }

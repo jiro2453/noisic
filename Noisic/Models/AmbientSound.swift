@@ -32,6 +32,10 @@ enum AmbientSound: String, CaseIterable, Identifiable {
         return "\(rawValue).mp3"
     }
 
+    var videoFileName: String {
+        return rawValue
+    }
+
     var icon: String {
         switch self {
         case .nightRain: return "cloud.rain.fill"
