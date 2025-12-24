@@ -97,11 +97,14 @@ struct ContentView: View {
 
                 Spacer()
                     .allowsHitTesting(false)
+                    .frame(maxHeight: 30)
 
-                // Music Player Section (Center)
+                // Music Player Section (Upper Center)
                 MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
                     .environmentObject(audioManager)
-                    .padding(.bottom, 30)
+
+                Spacer()
+                    .allowsHitTesting(false)
             }
             .padding(.horizontal, 20)
         }
@@ -182,38 +185,38 @@ struct VinylRecordView: View {
 
     var body: some View {
         ZStack {
-            // Vinyl Record Disc (Larger)
+            // Vinyl Record Disc (Extra Large)
             Circle()
                 .fill(Color.black)
-                .frame(width: 350, height: 350)
-                .shadow(color: .black.opacity(0.8), radius: 40)
+                .frame(width: 420, height: 420)
+                .shadow(color: .black.opacity(0.8), radius: 50)
 
             // Vinyl grooves (concentric circles)
-            ForEach(0..<9) { index in
+            ForEach(0..<10) { index in
                 Circle()
                     .stroke(Color.white.opacity(0.03), lineWidth: 1)
-                    .frame(width: CGFloat(350 - index * 17), height: CGFloat(350 - index * 17))
+                    .frame(width: CGFloat(420 - index * 20), height: CGFloat(420 - index * 20))
             }
 
             // Inner label area (darker)
             Circle()
                 .fill(Color.black.opacity(0.7))
-                .frame(width: 260, height: 260)
+                .frame(width: 310, height: 310)
 
-            // Album artwork or placeholder (Larger)
+            // Album artwork or placeholder (Extra Large)
             if let artwork = artwork {
                 Image(uiImage: artwork)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 240, height: 240)
+                    .frame(width: 290, height: 290)
                     .clipShape(Circle())
             } else {
                 Circle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 240, height: 240)
+                    .frame(width: 290, height: 290)
                     .overlay(
                         Image(systemName: "music.note")
-                            .font(.system(size: 70))
+                            .font(.system(size: 80))
                             .foregroundColor(.white.opacity(0.4))
                     )
             }
@@ -221,10 +224,10 @@ struct VinylRecordView: View {
             // Center hole
             Circle()
                 .fill(Color.black)
-                .frame(width: 35, height: 35)
+                .frame(width: 40, height: 40)
                 .overlay(
                     Circle()
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
                 )
         }
         .rotationEffect(.degrees(rotation))
