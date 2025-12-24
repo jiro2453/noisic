@@ -42,31 +42,27 @@ struct ContentView: View {
             .ignoresSafeArea()
 
             // Foreground Content
-            VStack(spacing: 30) {
-                // Now Playing Section
-                NowPlayingView(musicInfo: musicInfoReader.musicInfo)
-                    .padding(.top, 40)
-
-                Spacer()
-
-                // Ambient Sound Name
+            VStack(spacing: 0) {
+                // Ambient Sound Name at Top
                 VStack(spacing: 8) {
                     Text(AmbientSound.allCases[currentIndex].displayName)
-                        .font(.system(size: 42, weight: .bold))
+                        .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 10)
 
                     Text("Swipe to change")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.6))
                         .shadow(color: .black.opacity(0.5), radius: 5)
                 }
+                .padding(.top, 60)
 
                 Spacer()
 
-                // Controls Section
-                ControlsView()
-                    .padding(.bottom, 40)
+                // Music Player Section (Center to Bottom)
+                MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
+                    .environmentObject(audioManager)
+                    .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
         }
@@ -79,95 +75,109 @@ struct ContentView: View {
     }
 }
 
-struct NowPlayingView: View {
+struct MusicPlayerView: View {
     let musicInfo: MusicInfo
+    @EnvironmentObject var audioManager: AudioManager
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 24) {
+            // Album Artwork
             if musicInfo.isPlaying {
-                // Artwork
                 if let artwork = musicInfo.artwork {
                     Image(uiImage: artwork)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 180, height: 180)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                        .shadow(color: .black.opacity(0.5), radius: 20)
+                        .frame(width: 280, height: 280)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.6), radius: 30)
                 } else {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(width: 180, height: 180)
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.white.opacity(0.15))
+                        .frame(width: 280, height: 280)
                         .overlay(
                             Image(systemName: "music.note")
-                                .font(.system(size: 50))
+                                .font(.system(size: 70))
                                 .foregroundColor(.white.opacity(0.5))
                         )
-                        .shadow(color: .black.opacity(0.5), radius: 20)
+                        .shadow(color: .black.opacity(0.6), radius: 30)
                 }
-
-                // Title and Artist
-                VStack(spacing: 4) {
-                    Text(musicInfo.title ?? "Unknown")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .lineLimit(1)
-                        .shadow(color: .black.opacity(0.5), radius: 5)
-
-                    Text(musicInfo.artist ?? "Unknown Artist")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
-                        .lineLimit(1)
-                        .shadow(color: .black.opacity(0.5), radius: 5)
-                }
-                .frame(maxWidth: 250)
             } else {
-                // No music playing state
-                VStack(spacing: 12) {
-                    Image(systemName: "music.note.list")
-                        .font(.system(size: 50))
-                        .foregroundColor(.white.opacity(0.5))
-                        .shadow(color: .black.opacity(0.5), radius: 5)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.white.opacity(0.1))
+                    .frame(width: 280, height: 280)
+                    .overlay(
+                        VStack(spacing: 12) {
+                            Image(systemName: "music.note.list")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.4))
 
-                    Text("No Music Playing")
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.7))
-                        .shadow(color: .black.opacity(0.5), radius: 5)
-                }
-                .frame(height: 180)
+                            Text("No Music Playing")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                    )
+                    .shadow(color: .black.opacity(0.6), radius: 30)
             }
-        }
-    }
-}
 
-struct ControlsView: View {
-    @EnvironmentObject var audioManager: AudioManager
+            // Song Info
+            VStack(spacing: 6) {
+                Text(musicInfo.title ?? "Unknown Track")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                    .shadow(color: .black.opacity(0.5), radius: 5)
 
-    var body: some View {
-        VStack(spacing: 16) {
-            // Volume Control
+                Text(musicInfo.artist ?? "Unknown Artist")
+                    .font(.system(size: 16))
+                    .foregroundColor(.white.opacity(0.8))
+                    .lineLimit(1)
+                    .shadow(color: .black.opacity(0.5), radius: 5)
+            }
+            .frame(maxWidth: 280)
+
+            // Ambient Sound Controls
             if audioManager.isPlaying {
-                VStack(spacing: 12) {
-                    HStack {
-                        Image(systemName: "speaker.fill")
-                            .foregroundColor(.white.opacity(0.8))
-                            .shadow(color: .black.opacity(0.5), radius: 5)
+                VStack(spacing: 16) {
+                    // Volume Control
+                    VStack(spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "speaker.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.white.opacity(0.7))
 
-                        Slider(
-                            value: Binding(
-                                get: { audioManager.volume },
-                                set: { audioManager.setVolume($0) }
-                            ),
-                            in: 0...1
-                        )
-                        .accentColor(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 3)
+                            Text("Ambient Volume")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
 
-                        Image(systemName: "speaker.wave.3.fill")
-                            .foregroundColor(.white.opacity(0.8))
-                            .shadow(color: .black.opacity(0.5), radius: 5)
+                            Spacer()
+                        }
+
+                        HStack(spacing: 12) {
+                            Image(systemName: "speaker.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.6))
+
+                            Slider(
+                                value: Binding(
+                                    get: { audioManager.volume },
+                                    set: { audioManager.setVolume($0) }
+                                ),
+                                in: 0...1
+                            )
+                            .accentColor(.white)
+
+                            Image(systemName: "speaker.wave.3.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.6))
+                        }
                     }
-                    .padding(.horizontal, 4)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.15))
+                            .shadow(color: .black.opacity(0.3), radius: 10)
+                    )
 
                     // Stop Button
                     Button(action: {
@@ -175,19 +185,21 @@ struct ControlsView: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "stop.circle.fill")
-                            Text("Stop Ambient Sound")
+                                .font(.system(size: 18))
+                            Text("Stop Ambient")
+                                .font(.system(size: 16, weight: .semibold))
                         }
-                        .font(.headline)
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 50)
+                        .frame(height: 48)
                         .background(
-                            RoundedRectangle(cornerRadius: 14)
+                            RoundedRectangle(cornerRadius: 12)
                                 .fill(Color.red.opacity(0.7))
-                                .shadow(color: .black.opacity(0.5), radius: 10)
+                                .shadow(color: .black.opacity(0.4), radius: 10)
                         )
                     }
                 }
+                .frame(maxWidth: 280)
             }
         }
     }
