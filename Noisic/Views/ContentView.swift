@@ -124,69 +124,72 @@ struct MusicPlayerView: View {
             }
             .frame(maxWidth: 280)
 
+            // Ambient Sound Volume Control (Always visible)
+            VStack(spacing: 12) {
+                HStack(spacing: 8) {
+                    Image(systemName: "speaker.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.7))
+
+                    Text("Ambient Volume")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.7))
+
+                    Spacer()
+
+                    Text("\(Int(audioManager.volume * 100))%")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.6))
+                }
+
+                HStack(spacing: 12) {
+                    Image(systemName: "speaker.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.6))
+
+                    Slider(
+                        value: Binding(
+                            get: { audioManager.volume },
+                            set: { audioManager.setVolume($0) }
+                        ),
+                        in: 0...1
+                    )
+                    .accentColor(.white)
+
+                    Image(systemName: "speaker.wave.3.fill")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.white.opacity(0.15))
+                    .shadow(color: .black.opacity(0.3), radius: 10)
+            )
+            .frame(maxWidth: 280)
+
             // Ambient Sound Controls
             if audioManager.isPlaying {
-                VStack(spacing: 16) {
-                    // Volume Control
-                    VStack(spacing: 8) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "speaker.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(.white.opacity(0.7))
-
-                            Text("Ambient Volume")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.7))
-
-                            Spacer()
-                        }
-
-                        HStack(spacing: 12) {
-                            Image(systemName: "speaker.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.6))
-
-                            Slider(
-                                value: Binding(
-                                    get: { audioManager.volume },
-                                    set: { audioManager.setVolume($0) }
-                                ),
-                                in: 0...1
-                            )
-                            .accentColor(.white)
-
-                            Image(systemName: "speaker.wave.3.fill")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.6))
-                        }
+                // Stop Button
+                Button(action: {
+                    audioManager.stop()
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "stop.circle.fill")
+                            .font(.system(size: 18))
+                        Text("Stop Ambient")
+                            .font(.system(size: 16, weight: .semibold))
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.15))
-                            .shadow(color: .black.opacity(0.3), radius: 10)
+                            .fill(Color.red.opacity(0.7))
+                            .shadow(color: .black.opacity(0.4), radius: 10)
                     )
-
-                    // Stop Button
-                    Button(action: {
-                        audioManager.stop()
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "stop.circle.fill")
-                                .font(.system(size: 18))
-                            Text("Stop Ambient")
-                                .font(.system(size: 16, weight: .semibold))
-                        }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 48)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.red.opacity(0.7))
-                                .shadow(color: .black.opacity(0.4), radius: 10)
-                        )
-                    }
                 }
                 .frame(maxWidth: 280)
             }
