@@ -45,16 +45,30 @@ struct ContentView: View {
             // Foreground Content
             VStack(spacing: 0) {
                 // Ambient Sound Name at Top
-                VStack(spacing: 8) {
-                    Text(AmbientSound.allCases[currentIndex].displayName)
-                        .font(.system(size: 28, weight: .bold))
+                VStack(spacing: 12) {
+                    // Icon
+                    Image(systemName: AmbientSound.allCases[currentIndex].icon)
+                        .font(.system(size: 40))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 10)
 
-                    Text("Swipe to change")
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.6))
-                        .shadow(color: .black.opacity(0.5), radius: 5)
+                    // Sound Name
+                    Text(AmbientSound.allCases[currentIndex].displayName)
+                        .font(.system(size: 26, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.5), radius: 10)
+
+                    // Swipe Indicator
+                    HStack(spacing: 8) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 60)
                 .allowsHitTesting(false)
