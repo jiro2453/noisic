@@ -14,7 +14,7 @@
 		AA0009 /* AudioSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0010 /* AudioSessionManager.swift */; };
 		AA0011 /* AudioManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0012 /* AudioManager.swift */; };
 		AA0013 /* MusicInfoReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0014 /* MusicInfoReader.swift */; };
-		AA0015 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0016 /* VideoPlayerView.swift */; };
+		AA0017 /* VideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0018 /* VideoPlayerView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,7 +25,7 @@
 		AA0010 /* AudioSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioSessionManager.swift; sourceTree = "<group>"; };
 		AA0012 /* AudioManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioManager.swift; sourceTree = "<group>"; };
 		AA0014 /* MusicInfoReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicInfoReader.swift; sourceTree = "<group>"; };
-		AA0016 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
+		AA0018 /* VideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerView.swift; sourceTree = "<group>"; };
 		AA0015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0099 /* Noisic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Noisic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -74,7 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0004 /* ContentView.swift */,
-				AA0016 /* VideoPlayerView.swift */,
+				AA0018 /* VideoPlayerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -196,7 +196,7 @@
 				AA0009 /* AudioSessionManager.swift in Sources */,
 				AA0011 /* AudioManager.swift in Sources */,
 				AA0013 /* MusicInfoReader.swift in Sources */,
-				AA0015 /* VideoPlayerView.swift in Sources */,
+				AA0017 /* VideoPlayerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
