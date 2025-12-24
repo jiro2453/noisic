@@ -49,22 +49,22 @@ struct ContentView: View {
                     VStack(spacing: 12) {
                         // Icon
                         Image(systemName: AmbientSound.allCases[currentIndex].icon)
-                            .font(.system(size: 40))
+                            .font(.system(size: 36))
                             .foregroundColor(.white)
                             .shadow(color: .black.opacity(0.5), radius: 10)
 
                         // Sound Name with Swipe Indicators
                         HStack(spacing: 12) {
                             Image(systemName: "chevron.left")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.white.opacity(0.5))
 
                             Text(AmbientSound.allCases[currentIndex].displayName)
-                                .font(.system(size: 26, weight: .bold))
+                                .font(.system(size: 22, weight: .bold))
                                 .foregroundColor(.white)
 
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.white.opacity(0.5))
                         }
                         .shadow(color: .black.opacity(0.5), radius: 10)
@@ -74,7 +74,7 @@ struct ContentView: View {
                     // Volume Control
                     HStack(spacing: 12) {
                         Image(systemName: "speaker.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                             .foregroundColor(.white.opacity(0.6))
 
                         Slider(
@@ -85,23 +85,23 @@ struct ContentView: View {
                             in: 0...1
                         )
                         .accentColor(.white)
-                        .frame(width: 200)
+                        .frame(width: 180)
 
                         Image(systemName: "speaker.wave.3.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                             .foregroundColor(.white.opacity(0.6))
                     }
                     .shadow(color: .black.opacity(0.5), radius: 5)
                 }
-                .padding(.top, 60)
+                .padding(.top, 50)
 
                 Spacer()
                     .allowsHitTesting(false)
 
-                // Music Player Section (Center to Bottom)
+                // Music Player Section (Center)
                 MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
                     .environmentObject(audioManager)
-                    .padding(.bottom, 50)
+                    .padding(.bottom, 30)
             }
             .padding(.horizontal, 20)
         }
@@ -120,8 +120,8 @@ struct MusicPlayerView: View {
     @State private var rotation: Double = 0
 
     var body: some View {
-        VStack(spacing: 24) {
-            // Album Artwork as Vinyl Record
+        VStack(spacing: 20) {
+            // Album Artwork as Vinyl Record (Larger)
             if musicInfo.isPlaying {
                 if let artwork = musicInfo.artwork {
                     VinylRecordView(artwork: artwork, isRotating: true, rotation: $rotation)
@@ -133,20 +133,20 @@ struct MusicPlayerView: View {
             }
 
             // Song Info
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 Text(musicInfo.title ?? "Unknown Track")
-                    .font(.system(size: 20, weight: .semibold))
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
 
                 Text(musicInfo.artist ?? "Unknown Artist")
-                    .font(.system(size: 16))
+                    .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.8))
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
             }
-            .frame(maxWidth: 280)
+            .frame(maxWidth: 300)
 
             // Ambient Sound Controls
             if audioManager.isPlaying {
@@ -156,20 +156,20 @@ struct MusicPlayerView: View {
                 }) {
                     HStack(spacing: 8) {
                         Image(systemName: "stop.circle.fill")
-                            .font(.system(size: 18))
+                            .font(.system(size: 16))
                         Text("Stop Ambient")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 48)
+                    .frame(height: 44)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color.red.opacity(0.7))
                             .shadow(color: .black.opacity(0.4), radius: 10)
                     )
                 }
-                .frame(maxWidth: 280)
+                .frame(maxWidth: 260)
             }
         }
     }
@@ -182,38 +182,38 @@ struct VinylRecordView: View {
 
     var body: some View {
         ZStack {
-            // Vinyl Record Disc
+            // Vinyl Record Disc (Larger)
             Circle()
                 .fill(Color.black)
-                .frame(width: 300, height: 300)
+                .frame(width: 350, height: 350)
                 .shadow(color: .black.opacity(0.8), radius: 40)
 
             // Vinyl grooves (concentric circles)
-            ForEach(0..<8) { index in
+            ForEach(0..<9) { index in
                 Circle()
                     .stroke(Color.white.opacity(0.03), lineWidth: 1)
-                    .frame(width: CGFloat(300 - index * 15), height: CGFloat(300 - index * 15))
+                    .frame(width: CGFloat(350 - index * 17), height: CGFloat(350 - index * 17))
             }
 
             // Inner label area (darker)
             Circle()
                 .fill(Color.black.opacity(0.7))
-                .frame(width: 220, height: 220)
+                .frame(width: 260, height: 260)
 
-            // Album artwork or placeholder
+            // Album artwork or placeholder (Larger)
             if let artwork = artwork {
                 Image(uiImage: artwork)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 200, height: 200)
+                    .frame(width: 240, height: 240)
                     .clipShape(Circle())
             } else {
                 Circle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 200, height: 200)
+                    .frame(width: 240, height: 240)
                     .overlay(
                         Image(systemName: "music.note")
-                            .font(.system(size: 60))
+                            .font(.system(size: 70))
                             .foregroundColor(.white.opacity(0.4))
                     )
             }
@@ -221,7 +221,7 @@ struct VinylRecordView: View {
             // Center hole
             Circle()
                 .fill(Color.black)
-                .frame(width: 30, height: 30)
+                .frame(width: 35, height: 35)
                 .overlay(
                     Circle()
                         .stroke(Color.white.opacity(0.3), lineWidth: 1)
