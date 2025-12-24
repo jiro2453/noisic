@@ -40,6 +40,7 @@ struct ContentView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
+            .allowsHitTesting(false)
 
             // Foreground Content
             VStack(spacing: 0) {
@@ -56,8 +57,10 @@ struct ContentView: View {
                         .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 60)
+                .allowsHitTesting(false)
 
                 Spacer()
+                    .allowsHitTesting(false)
 
                 // Music Player Section (Center to Bottom)
                 MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
