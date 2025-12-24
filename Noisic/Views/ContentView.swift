@@ -51,6 +51,7 @@ struct ContentView: View {
                         Image(systemName: AmbientSound.allCases[currentIndex].icon)
                             .font(.system(size: 36))
                             .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
                             .shadow(color: .black.opacity(0.5), radius: 10)
 
                         // Sound Name with Swipe Indicators
