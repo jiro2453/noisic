@@ -52,23 +52,21 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.5), radius: 10)
 
-                    // Sound Name
-                    Text(AmbientSound.allCases[currentIndex].displayName)
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 10)
-
-                    // Swipe Indicator
-                    HStack(spacing: 8) {
+                    // Sound Name with Swipe Indicators
+                    HStack(spacing: 12) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white.opacity(0.5))
+
+                        Text(AmbientSound.allCases[currentIndex].displayName)
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(.white)
 
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: 14, weight: .semibold))
                             .foregroundColor(.white.opacity(0.5))
                     }
-                    .shadow(color: .black.opacity(0.5), radius: 5)
+                    .shadow(color: .black.opacity(0.5), radius: 10)
                 }
                 .padding(.top, 60)
                 .allowsHitTesting(false)
