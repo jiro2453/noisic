@@ -125,15 +125,18 @@ struct MusicPlayerView: View {
     var body: some View {
         VStack(spacing: 20) {
             // Album Artwork as Vinyl Record (Larger)
-            if musicInfo.isPlaying {
-                if let artwork = musicInfo.artwork {
-                    VinylRecordView(artwork: artwork, isRotating: true, rotation: $rotation)
+            VStack {
+                if musicInfo.isPlaying {
+                    if let artwork = musicInfo.artwork {
+                        VinylRecordView(artwork: artwork, isRotating: true, rotation: $rotation)
+                    } else {
+                        VinylRecordView(artwork: nil, isRotating: true, rotation: $rotation)
+                    }
                 } else {
-                    VinylRecordView(artwork: nil, isRotating: true, rotation: $rotation)
+                    VinylRecordView(artwork: nil, isRotating: false, rotation: $rotation)
                 }
-            } else {
-                VinylRecordView(artwork: nil, isRotating: false, rotation: $rotation)
             }
+            .allowsHitTesting(false)
 
             // Song Info
             VStack(spacing: 4) {
@@ -150,10 +153,11 @@ struct MusicPlayerView: View {
                     .shadow(color: .black.opacity(0.5), radius: 5)
             }
             .frame(maxWidth: 300)
+            .allowsHitTesting(false)
 
             // Ambient Sound Controls
             if audioManager.isPlaying {
-                // Stop Button
+                // Stop Button (Interactive)
                 Button(action: {
                     audioManager.stop()
                 }) {
