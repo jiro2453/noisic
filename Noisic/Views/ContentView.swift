@@ -93,45 +93,19 @@ struct ContentView: View {
 struct MusicPlayerView: View {
     let musicInfo: MusicInfo
     @EnvironmentObject var audioManager: AudioManager
+    @State private var rotation: Double = 0
 
     var body: some View {
         VStack(spacing: 24) {
-            // Album Artwork
+            // Album Artwork as Vinyl Record
             if musicInfo.isPlaying {
                 if let artwork = musicInfo.artwork {
-                    Image(uiImage: artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 280, height: 280)
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .shadow(color: .black.opacity(0.6), radius: 30)
+                    VinylRecordView(artwork: artwork, isRotating: true, rotation: $rotation)
                 } else {
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.white.opacity(0.15))
-                        .frame(width: 280, height: 280)
-                        .overlay(
-                            Image(systemName: "music.note")
-                                .font(.system(size: 70))
-                                .foregroundColor(.white.opacity(0.5))
-                        )
-                        .shadow(color: .black.opacity(0.6), radius: 30)
+                    VinylRecordView(artwork: nil, isRotating: true, rotation: $rotation)
                 }
             } else {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.white.opacity(0.1))
-                    .frame(width: 280, height: 280)
-                    .overlay(
-                        VStack(spacing: 12) {
-                            Image(systemName: "music.note.list")
-                                .font(.system(size: 60))
-                                .foregroundColor(.white.opacity(0.4))
-
-                            Text("No Music Playing")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.6))
-                        }
-                    )
-                    .shadow(color: .black.opacity(0.6), radius: 30)
+                VinylRecordView(artwork: nil, isRotating: false, rotation: $rotation)
             }
 
             // Song Info
@@ -215,6 +189,80 @@ struct MusicPlayerView: View {
                     }
                 }
                 .frame(maxWidth: 280)
+            }
+        }
+    }
+}
+
+struct VinylRecordView: View {
+    let artwork: UIImage?
+    let isRotating: Bool
+    @Binding var rotation: Double
+
+    var body: some View {
+        ZStack {
+            // Vinyl Record Disc
+            Circle()
+                .fill(Color.black)
+                .frame(width: 300, height: 300)
+                .shadow(color: .black.opacity(0.8), radius: 40)
+
+            // Vinyl grooves (concentric circles)
+            ForEach(0..<8) { index in
+                Circle()
+                    .stroke(Color.white.opacity(0.03), lineWidth: 1)
+                    .frame(width: CGFloat(300 - index * 15), height: CGFloat(300 - index * 15))
+            }
+
+            // Inner label area (darker)
+            Circle()
+                .fill(Color.black.opacity(0.7))
+                .frame(width: 220, height: 220)
+
+            // Album artwork or placeholder
+            if let artwork = artwork {
+                Image(uiImage: artwork)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 200, height: 200)
+                    .clipShape(Circle())
+            } else {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 200, height: 200)
+                    .overlay(
+                        Image(systemName: "music.note")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.4))
+                    )
+            }
+
+            // Center hole
+            Circle()
+                .fill(Color.black)
+                .frame(width: 30, height: 30)
+                .overlay(
+                    Circle()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+        }
+        .rotationEffect(.degrees(rotation))
+        .onAppear {
+            if isRotating {
+                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                    rotation = 360
+                }
+            }
+        }
+        .onChange(of: isRotating) { newValue in
+            if newValue {
+                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                    rotation = 360
+                }
+            } else {
+                withAnimation(.linear(duration: 0.5)) {
+                    rotation = 0
+                }
             }
         }
     }
