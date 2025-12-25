@@ -323,14 +323,14 @@ struct VinylRecordView: View {
         .rotationEffect(.degrees(rotation))
         .onAppear {
             if isRotating {
-                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
                     rotation = 360
                 }
             }
         }
         .onChange(of: isRotating) { newValue in
             if newValue {
-                withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+                withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
                     rotation = 360
                 }
             } else {
