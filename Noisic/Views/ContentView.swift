@@ -64,32 +64,24 @@ struct ContentView: View {
 
             // Foreground Content
             VStack(spacing: 0) {
-                // Ambient Sound Name at Top
+                // Ambient Sound Icon with Navigation Arrows at Top
                 VStack(spacing: 12) {
-                    VStack(spacing: 12) {
-                        // Icon
+                    // Icon with Arrows
+                    HStack(spacing: 20) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
+
                         Image(systemName: AmbientSound.allCases[actualIndex].icon)
                             .font(.system(size: 36))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
-                            .shadow(color: .black.opacity(0.5), radius: 10)
 
-                        // Sound Name with Swipe Indicators
-                        HStack(spacing: 12) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.5))
-
-                            Text(AmbientSound.allCases[actualIndex].displayName)
-                                .font(.system(size: 22, weight: .bold))
-                                .foregroundColor(.white)
-
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                        .shadow(color: .black.opacity(0.5), radius: 10)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white.opacity(0.5))
                     }
+                    .shadow(color: .black.opacity(0.5), radius: 10)
                     .allowsHitTesting(false)
 
                     // Volume Control
