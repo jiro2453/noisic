@@ -11,7 +11,7 @@ import Combine
 class AudioManager: ObservableObject {
     @Published var currentSound: AmbientSound?
     @Published var isPlaying = false
-    @Published var volume: Float = 0.5
+    @Published var volume: Float = 1.0
 
     private var audioPlayer: AVAudioPlayer?
 
