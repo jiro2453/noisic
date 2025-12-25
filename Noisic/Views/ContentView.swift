@@ -10,13 +10,22 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
-    @State private var currentIndex = 0
+    @State private var currentIndex = 6 // Start from middle of tripled array
+
+    // Triple the ambient sounds for infinite scrolling effect
+    private var extendedSounds: [AmbientSound] {
+        AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
+    }
+
+    private var actualIndex: Int {
+        currentIndex % AmbientSound.allCases.count
+    }
 
     var body: some View {
         ZStack {
             // Background Video Carousel
             TabView(selection: $currentIndex) {
-                ForEach(Array(AmbientSound.allCases.enumerated()), id: \.element.id) { index, sound in
+                ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
                     VideoPlayerView(videoName: sound.videoFileName)
                         .tag(index)
                 }
@@ -25,8 +34,19 @@ struct ContentView: View {
             .ignoresSafeArea()
             .onChange(of: currentIndex) { newValue in
                 // Auto-play ambient sound when swiping
-                let sound = AmbientSound.allCases[newValue]
+                let sound = extendedSounds[newValue]
                 audioManager.play(sound: sound)
+
+                // Handle infinite loop by jumping to middle set
+                DispatchQueue.main.async {
+                    if newValue < AmbientSound.allCases.count {
+                        // Jumped to first set, move to middle set
+                        currentIndex = newValue + AmbientSound.allCases.count
+                    } else if newValue >= AmbientSound.allCases.count * 2 {
+                        // Jumped to third set, move to middle set
+                        currentIndex = newValue - AmbientSound.allCases.count
+                    }
+                }
             }
 
             // Gradient overlay for better text visibility
@@ -48,7 +68,7 @@ struct ContentView: View {
                 VStack(spacing: 12) {
                     VStack(spacing: 12) {
                         // Icon
-                        Image(systemName: AmbientSound.allCases[currentIndex].icon)
+                        Image(systemName: AmbientSound.allCases[actualIndex].icon)
                             .font(.system(size: 36))
                             .foregroundColor(.white)
                             .frame(width: 40, height: 40)
@@ -60,7 +80,7 @@ struct ContentView: View {
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.white.opacity(0.5))
 
-                            Text(AmbientSound.allCases[currentIndex].displayName)
+                            Text(AmbientSound.allCases[actualIndex].displayName)
                                 .font(.system(size: 22, weight: .bold))
                                 .foregroundColor(.white)
 
