@@ -11,8 +11,5 @@ struct MusicInfo {
     let title: String?
     let artist: String?
     let artwork: UIImage?
-
-    var isPlaying: Bool {
-        title != nil || artist != nil
-    }
+    let isPlaying: Bool
 }

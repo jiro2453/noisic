@@ -123,6 +123,7 @@ struct ContentView: View {
                 // Music Player Section (Upper Center)
                 MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
                     .environmentObject(audioManager)
+                    .environmentObject(musicInfoReader)
 
                 Spacer()
                     .allowsHitTesting(false)
@@ -141,7 +142,15 @@ struct ContentView: View {
 struct MusicPlayerView: View {
     let musicInfo: MusicInfo
     @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var musicInfoReader: MusicInfoReader
     @State private var rotation: Double = 0
+
+    private func formatTime(_ timeInterval: TimeInterval) -> String {
+        let totalSeconds = Int(timeInterval)
+        let minutes = totalSeconds / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -175,6 +184,70 @@ struct MusicPlayerView: View {
             }
             .frame(maxWidth: 300)
             .allowsHitTesting(false)
+
+            // Music Playback Controls
+            if musicInfo.isPlaying {
+                VStack(spacing: 12) {
+                    // Seek Bar
+                    VStack(spacing: 4) {
+                        Slider(
+                            value: Binding(
+                                get: { musicInfoReader.currentTime },
+                                set: { musicInfoReader.seek(to: $0) }
+                            ),
+                            in: 0...max(musicInfoReader.duration, 1)
+                        )
+                        .accentColor(.white)
+                        .frame(maxWidth: 280)
+
+                        // Time Labels
+                        HStack {
+                            Text(formatTime(musicInfoReader.currentTime))
+                                .font(.system(size: 11))
+                                .foregroundColor(.white.opacity(0.7))
+
+                            Spacer()
+
+                            Text(formatTime(musicInfoReader.duration))
+                                .font(.system(size: 11))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: 280)
+                    }
+                    .shadow(color: .black.opacity(0.5), radius: 5)
+
+                    // Playback Control Buttons
+                    HStack(spacing: 30) {
+                        // Previous Button
+                        Button(action: {
+                            musicInfoReader.skipToPrevious()
+                        }) {
+                            Image(systemName: "backward.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                        }
+
+                        // Play/Pause Button
+                        Button(action: {
+                            musicInfoReader.playPause()
+                        }) {
+                            Image(systemName: musicInfoReader.isPlaying ? "pause.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 44))
+                                .foregroundColor(.white)
+                        }
+
+                        // Next Button
+                        Button(action: {
+                            musicInfoReader.skipToNext()
+                        }) {
+                            Image(systemName: "forward.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .shadow(color: .black.opacity(0.5), radius: 10)
+                }
+            }
 
             // Ambient Sound Controls
             if audioManager.isPlaying {
