@@ -177,68 +177,104 @@ struct MusicPlayerView: View {
             .frame(maxWidth: 300)
             .allowsHitTesting(false)
 
-            // Music Playback Controls
-            if musicInfo.isPlaying {
-                VStack(spacing: 12) {
-                    // Seek Bar
-                    VStack(spacing: 4) {
-                        Slider(
-                            value: Binding(
-                                get: { musicInfoReader.currentTime },
-                                set: { musicInfoReader.seek(to: $0) }
-                            ),
-                            in: 0...max(musicInfoReader.duration, 1)
-                        )
-                        .accentColor(.white)
-                        .frame(maxWidth: 280)
+            // Music Playback Controls (Always Visible)
+            VStack(spacing: 16) {
+                // Seek Bar
+                VStack(spacing: 6) {
+                    Slider(
+                        value: Binding(
+                            get: { musicInfoReader.currentTime },
+                            set: { musicInfoReader.seek(to: $0) }
+                        ),
+                        in: 0...max(musicInfoReader.duration, 1)
+                    )
+                    .accentColor(.white)
+                    .frame(maxWidth: 300)
+                    .disabled(!musicInfo.isPlaying)
 
-                        // Time Labels
-                        HStack {
-                            Text(formatTime(musicInfoReader.currentTime))
-                                .font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.7))
+                    // Time Labels
+                    HStack {
+                        Text(formatTime(musicInfoReader.currentTime))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
 
-                            Spacer()
+                        Spacer()
 
-                            Text(formatTime(musicInfoReader.duration))
-                                .font(.system(size: 11))
-                                .foregroundColor(.white.opacity(0.7))
-                        }
-                        .frame(maxWidth: 280)
+                        Text(formatTime(musicInfoReader.duration))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
                     }
-                    .shadow(color: .black.opacity(0.5), radius: 5)
-
-                    // Playback Control Buttons
-                    HStack(spacing: 30) {
-                        // Previous Button
-                        Button(action: {
-                            musicInfoReader.skipToPrevious()
-                        }) {
-                            Image(systemName: "backward.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                        }
-
-                        // Play/Pause Button
-                        Button(action: {
-                            musicInfoReader.playPause()
-                        }) {
-                            Image(systemName: musicInfoReader.isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                                .font(.system(size: 44))
-                                .foregroundColor(.white)
-                        }
-
-                        // Next Button
-                        Button(action: {
-                            musicInfoReader.skipToNext()
-                        }) {
-                            Image(systemName: "forward.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .shadow(color: .black.opacity(0.5), radius: 10)
+                    .frame(maxWidth: 300)
                 }
+                .padding(.horizontal, 10)
+                .opacity(musicInfo.isPlaying ? 1.0 : 0.4)
+
+                // Playback Control Buttons (Stylish)
+                HStack(spacing: 40) {
+                    // Previous Button
+                    Button(action: {
+                        musicInfoReader.skipToPrevious()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.15))
+                                .frame(width: 60, height: 60)
+
+                            Image(systemName: "backward.fill")
+                                .font(.system(size: 26, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .disabled(!musicInfo.isPlaying)
+
+                    // Play/Pause Button
+                    Button(action: {
+                        musicInfoReader.playPause()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color.white.opacity(0.3),
+                                            Color.white.opacity(0.15)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 80, height: 80)
+
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                                .frame(width: 80, height: 80)
+
+                            Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.white)
+                                .offset(x: musicInfoReader.isPlaying ? 0 : 2)
+                        }
+                    }
+                    .disabled(!musicInfo.isPlaying)
+
+                    // Next Button
+                    Button(action: {
+                        musicInfoReader.skipToNext()
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.15))
+                                .frame(width: 60, height: 60)
+
+                            Image(systemName: "forward.fill")
+                                .font(.system(size: 26, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .disabled(!musicInfo.isPlaying)
+                }
+                .shadow(color: .black.opacity(0.6), radius: 15, x: 0, y: 5)
+                .opacity(musicInfo.isPlaying ? 1.0 : 0.4)
             }
 
             // Ambient Sound Controls
