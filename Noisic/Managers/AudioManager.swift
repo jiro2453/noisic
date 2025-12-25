@@ -26,12 +26,16 @@ class AudioManager: ObservableObject {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.numberOfLoops = -1 // Loop indefinitely
             audioPlayer?.volume = volume
-            audioPlayer?.play()
+            audioPlayer?.prepareToPlay()
+
+            let success = audioPlayer?.play() ?? false
 
             currentSound = sound
-            isPlaying = true
+            isPlaying = success
+
+            print("Now playing: \(sound.displayName) at volume \(volume), success: \(success)")
         } catch {
-            print("Failed to play audio: \(error)")
+            print("Failed to play audio: \(error.localizedDescription)")
         }
     }
 

@@ -17,17 +17,29 @@ class AudioSessionManager {
             let audioSession = AVAudioSession.sharedInstance()
 
             // Set category to allow mixing with other audio (like music apps)
+            // Using .ambient category instead of .playback for better mixing behavior
             try audioSession.setCategory(
-                .playback,
+                .ambient,
                 mode: .default,
-                options: [.mixWithOthers]
+                options: []
             )
 
-            try audioSession.setActive(true)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
-            print("Audio session configured successfully")
+            print("Audio session configured successfully with category: \(audioSession.category)")
         } catch {
-            print("Failed to configure audio session: \(error)")
+            print("Failed to configure audio session: \(error.localizedDescription)")
+        }
+    }
+
+    func ensureActive() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            if !audioSession.isOtherAudioPlaying {
+                try audioSession.setActive(true)
+            }
+        } catch {
+            print("Failed to ensure audio session active: \(error.localizedDescription)")
         }
     }
 }
