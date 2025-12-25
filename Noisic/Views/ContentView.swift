@@ -33,17 +33,21 @@ struct ContentView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
             .onChange(of: currentIndex) { newValue in
+                print("=== Swipe detected: index changed to \(newValue) ===")
                 // Auto-play ambient sound when swiping
                 let sound = extendedSounds[newValue]
+                print("Switching to ambient sound: \(sound.displayName)")
                 audioManager.play(sound: sound)
 
                 // Handle infinite loop by jumping to middle set
                 DispatchQueue.main.async {
                     if newValue < AmbientSound.allCases.count {
                         // Jumped to first set, move to middle set
+                        print("Loop adjustment: Moving from first set to middle set")
                         currentIndex = newValue + AmbientSound.allCases.count
                     } else if newValue >= AmbientSound.allCases.count * 2 {
                         // Jumped to third set, move to middle set
+                        print("Loop adjustment: Moving from third set to middle set")
                         currentIndex = newValue - AmbientSound.allCases.count
                     }
                 }
@@ -123,9 +127,13 @@ struct ContentView: View {
             .padding(.horizontal, 20)
         }
         .onAppear {
+            print("=== ContentView appeared ===")
             // Auto-play first sound on launch
             if !audioManager.isPlaying {
+                print("Starting auto-play of first ambient sound")
                 audioManager.play(sound: AmbientSound.allCases[0])
+            } else {
+                print("Audio already playing, skipping auto-play")
             }
         }
     }
