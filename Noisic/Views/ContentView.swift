@@ -252,9 +252,9 @@ struct VinylRecordView: View {
 
     var body: some View {
         ZStack {
-            // Vinyl Record Disc (narrower outer ring)
+            // Vinyl Record Disc (narrower outer ring with transparency)
             Circle()
-                .fill(Color.black)
+                .fill(Color.black.opacity(0.6))
                 .frame(width: 380, height: 380)
                 .shadow(color: .black.opacity(0.8), radius: 50)
 
