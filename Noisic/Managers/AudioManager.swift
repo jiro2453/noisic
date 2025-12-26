@@ -24,7 +24,8 @@ class AudioManager: ObservableObject {
             audioPlayer?.stop()
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.numberOfLoops = -1 // Loop indefinitely
-            audioPlayer?.volume = volume
+            // Apply volume multiplier for each sound
+            audioPlayer?.volume = volume * sound.volumeMultiplier
             audioPlayer?.prepareToPlay()
 
             let success = audioPlayer?.play() ?? false
@@ -44,6 +45,11 @@ class AudioManager: ObservableObject {
 
     func setVolume(_ newVolume: Float) {
         volume = newVolume
-        audioPlayer?.volume = newVolume
+        // Apply volume multiplier when changing volume
+        if let sound = currentSound {
+            audioPlayer?.volume = newVolume * sound.volumeMultiplier
+        } else {
+            audioPlayer?.volume = newVolume
+        }
     }
 }

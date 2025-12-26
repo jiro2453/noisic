@@ -313,15 +313,16 @@ struct VinylRecordView: View {
     }
 
     private func startRotation() {
-        // Continue rotating from current position infinitely
+        // Start continuous rotation at constant speed
+        // Use a large value to ensure smooth infinite rotation
         withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
-            rotation += 360
+            rotation = rotation + 360 * 1000  // Rotate 1000 times
         }
     }
 
     private func stopRotation() {
-        // Stop animation but preserve current rotation position
-        // No reset to 0, stays at current angle
+        // Stop animation without resetting position
+        // Animation is cancelled, rotation stays at current value
     }
 }
 
