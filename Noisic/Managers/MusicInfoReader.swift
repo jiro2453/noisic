@@ -18,7 +18,6 @@ class MusicInfoReader: ObservableObject {
     private let player = MPMusicPlayerController.systemMusicPlayer
 
     init() {
-        print("=== MusicInfoReader initializing ===")
         startMonitoring()
     }
 

@@ -25,21 +25,8 @@ class AudioSessionManager {
             )
 
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-
-            print("Audio session configured successfully with category: \(audioSession.category)")
         } catch {
-            print("Failed to configure audio session: \(error.localizedDescription)")
-        }
-    }
-
-    func ensureActive() {
-        do {
-            let audioSession = AVAudioSession.sharedInstance()
-            if !audioSession.isOtherAudioPlaying {
-                try audioSession.setActive(true)
-            }
-        } catch {
-            print("Failed to ensure audio session active: \(error.localizedDescription)")
+            // Silently handle error
         }
     }
 }
