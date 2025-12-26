@@ -257,7 +257,6 @@ struct VinylRecordView: View {
             Circle()
                 .fill(Color.black.opacity(0.6))
                 .frame(width: 380, height: 380)
-                .shadow(color: .black.opacity(0.8), radius: 50)
 
             // Vinyl grooves (concentric circles)
             ForEach(0..<8) { index in
