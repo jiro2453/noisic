@@ -16,8 +16,7 @@ struct VideoPlayerView: View {
     var body: some View {
         GeometryReader { geometry in
             if let player = player {
-                VideoPlayer(player: player)
-                    .disabled(true)
+                VideoPlayerLayerView(player: player)
                     .blur(radius: 5)
             } else {
                 Color.black
@@ -56,5 +55,38 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
+    }
+}
+
+// Custom video player view that fills the screen
+struct VideoPlayerLayerView: UIViewRepresentable {
+    let player: AVPlayer
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = .black
+
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.videoGravity = .resizeAspectFill // Fill the screen while maintaining aspect ratio
+        playerLayer.frame = UIScreen.main.bounds
+
+        view.layer.addSublayer(playerLayer)
+        context.coordinator.playerLayer = playerLayer
+
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        if let playerLayer = context.coordinator.playerLayer {
+            playerLayer.frame = uiView.bounds
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator {
+        var playerLayer: AVPlayerLayer?
     }
 }
