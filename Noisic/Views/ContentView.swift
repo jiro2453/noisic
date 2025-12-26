@@ -252,17 +252,17 @@ struct VinylRecordView: View {
 
     var body: some View {
         ZStack {
-            // Vinyl Record Disc (Extra Large)
+            // Vinyl Record Disc (narrower outer ring)
             Circle()
                 .fill(Color.black)
-                .frame(width: 420, height: 420)
+                .frame(width: 380, height: 380)
                 .shadow(color: .black.opacity(0.8), radius: 50)
 
             // Vinyl grooves (concentric circles)
-            ForEach(0..<10) { index in
+            ForEach(0..<8) { index in
                 Circle()
                     .stroke(Color.white.opacity(0.03), lineWidth: 1)
-                    .frame(width: CGFloat(420 - index * 20), height: CGFloat(420 - index * 20))
+                    .frame(width: CGFloat(380 - index * 18), height: CGFloat(380 - index * 18))
             }
 
             // Inner label area (darker)
