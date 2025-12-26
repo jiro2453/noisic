@@ -16,18 +16,21 @@ struct VideoPlayerView: View {
     var body: some View {
         GeometryReader { geometry in
             if let player = player {
-                VideoPlayerLayerView(player: player)
+                VideoPlayer(player: player)
+                    .disabled(true)
                     .blur(radius: 5)
-                    .drawingGroup() // Render to offscreen buffer for better performance
+                    .onAppear {
+                        player.play()
+                    }
+                    .onDisappear {
+                        player.pause()
+                    }
             } else {
                 Color.black
             }
         }
         .onAppear {
             setupPlayer()
-        }
-        .onDisappear {
-            player?.pause()
         }
         .ignoresSafeArea()
     }
@@ -53,32 +56,5 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
-        newPlayer.play()
-    }
-}
-
-// Lightweight video player using AVPlayerLayer
-struct VideoPlayerLayerView: UIViewRepresentable {
-    let player: AVPlayer
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.videoGravity = .resizeAspectFill
-        view.layer.addSublayer(playerLayer)
-        context.coordinator.playerLayer = playerLayer
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.playerLayer?.frame = uiView.bounds
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator {
-        var playerLayer: AVPlayerLayer?
     }
 }
