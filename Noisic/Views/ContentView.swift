@@ -241,30 +241,6 @@ struct MusicPlayerView: View {
                 .shadow(color: .black.opacity(0.6), radius: 15, x: 0, y: 5)
                 .opacity(musicInfo.title != nil ? 1.0 : 0.4)
             }
-
-            // Ambient Sound Controls
-            if audioManager.isPlaying {
-                // Stop Button (Interactive)
-                Button(action: {
-                    audioManager.stop()
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "stop.circle.fill")
-                            .font(.system(size: 16))
-                        Text("Stop Ambient")
-                            .font(.system(size: 14, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.red.opacity(0.7))
-                            .shadow(color: .black.opacity(0.4), radius: 10)
-                    )
-                }
-                .frame(maxWidth: 260)
-            }
         }
     }
 }
@@ -337,16 +313,15 @@ struct VinylRecordView: View {
     }
 
     private func startRotation() {
-        rotation = 0
+        // Continue rotating from current position infinitely
         withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
-            rotation = 360
+            rotation += 360
         }
     }
 
     private func stopRotation() {
-        withAnimation(.linear(duration: 0.5)) {
-            rotation = 0
-        }
+        // Stop animation but preserve current rotation position
+        // No reset to 0, stays at current angle
     }
 }
 
