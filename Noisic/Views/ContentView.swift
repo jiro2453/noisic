@@ -71,16 +71,16 @@ struct ContentView: View {
                     HStack(spacing: 20) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.4))
 
                         Image(systemName: AmbientSound.allCases[actualIndex].icon)
                             .font(.system(size: 36))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.55))
                             .frame(width: 40, height: 40)
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white.opacity(0.4))
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
                     .allowsHitTesting(false)
@@ -89,7 +89,7 @@ struct ContentView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "speaker.fill")
                             .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.5))
 
                         Slider(
                             value: Binding(
@@ -98,12 +98,12 @@ struct ContentView: View {
                             ),
                             in: 0...2
                         )
-                        .accentColor(.white.opacity(0.7))
+                        .accentColor(.white.opacity(0.55))
                         .frame(width: 180)
 
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.5))
                     }
                     .shadow(color: .black.opacity(0.5), radius: 5)
                 }
@@ -161,13 +161,13 @@ struct MusicPlayerView: View {
             VStack(spacing: 4) {
                 Text(musicInfo.title ?? "Unknown Track")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.white.opacity(0.55))
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
 
                 Text(musicInfo.artist ?? "Unknown Artist")
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.6))
+                    .foregroundColor(.white.opacity(0.5))
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
             }
@@ -185,7 +185,7 @@ struct MusicPlayerView: View {
                         ),
                         in: 0...max(musicInfoReader.duration, 1)
                     )
-                    .accentColor(.white.opacity(0.7))
+                    .accentColor(.white.opacity(0.55))
                     .frame(maxWidth: 300)
                     .disabled(musicInfo.title == nil)
 
@@ -193,13 +193,13 @@ struct MusicPlayerView: View {
                     HStack {
                         Text(formatTime(musicInfoReader.currentTime))
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.5))
 
                         Spacer()
 
                         Text(formatTime(musicInfoReader.duration))
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.white.opacity(0.5))
                     }
                     .frame(maxWidth: 300)
                 }
@@ -214,7 +214,7 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: "backward.fill")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.55))
                     }
                     .disabled(musicInfo.title == nil)
 
@@ -224,7 +224,7 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.55))
                             .offset(x: musicInfoReader.isPlaying ? 0 : 2)
                     }
                     .disabled(musicInfo.title == nil)
@@ -235,7 +235,7 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: "forward.fill")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.7))
+                            .foregroundColor(.white.opacity(0.55))
                     }
                     .disabled(musicInfo.title == nil)
                 }
