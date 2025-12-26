@@ -17,7 +17,7 @@ struct VideoPlayerView: View {
             if let player = player {
                 VideoPlayer(player: player)
                     .disabled(true)
-                    .blur(radius: 15)
+                    .blur(radius: 9)
                     .onAppear {
                         player.play()
                     }
