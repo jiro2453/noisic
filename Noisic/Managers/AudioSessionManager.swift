@@ -17,11 +17,11 @@ class AudioSessionManager {
             let audioSession = AVAudioSession.sharedInstance()
 
             // Set category to allow mixing with other audio (like music apps)
-            // Using .ambient category instead of .playback for better mixing behavior
+            // Using .playback with .mixWithOthers to ignore silent switch
             try audioSession.setCategory(
-                .ambient,
+                .playback,
                 mode: .default,
-                options: []
+                options: [.mixWithOthers]
             )
 
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
