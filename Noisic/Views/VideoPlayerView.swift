@@ -19,18 +19,18 @@ struct VideoPlayerView: View {
                 VideoPlayer(player: player)
                     .disabled(true)
                     .blur(radius: 5)
-                    .onAppear {
-                        player.play()
-                    }
-                    .onDisappear {
-                        player.pause()
-                    }
             } else {
                 Color.black
             }
         }
         .onAppear {
-            setupPlayer()
+            if player == nil {
+                setupPlayer()
+            }
+            player?.play()
+        }
+        .onDisappear {
+            player?.pause()
         }
         .ignoresSafeArea()
     }
