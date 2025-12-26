@@ -95,7 +95,7 @@ struct ContentView: View {
                                 get: { audioManager.volume },
                                 set: { audioManager.setVolume($0) }
                             ),
-                            in: 0...1
+                            in: 0...2
                         )
                         .accentColor(.white)
                         .frame(width: 180)
@@ -315,7 +315,7 @@ struct VinylRecordView: View {
     private func startRotation() {
         // Start continuous rotation at constant speed
         // Use a large value to ensure smooth infinite rotation
-        withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
+        withAnimation(.linear(duration: 12).repeatForever(autoreverses: false)) {
             rotation = rotation + 360 * 1000  // Rotate 1000 times
         }
     }
