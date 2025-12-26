@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AVKit
+import AVFoundation
 
 struct VideoPlayerView: View {
     let videoName: String
@@ -15,15 +16,9 @@ struct VideoPlayerView: View {
     var body: some View {
         GeometryReader { geometry in
             if let player = player {
-                VideoPlayer(player: player)
-                    .disabled(true)
+                VideoPlayerLayerView(player: player)
                     .blur(radius: 5)
-                    .onAppear {
-                        player.play()
-                    }
-                    .onDisappear {
-                        player.pause()
-                    }
+                    .drawingGroup() // Render to offscreen buffer for better performance
             } else {
                 Color.black
             }
@@ -31,18 +26,21 @@ struct VideoPlayerView: View {
         .onAppear {
             setupPlayer()
         }
+        .onDisappear {
+            player?.pause()
+        }
         .ignoresSafeArea()
     }
 
     private func setupPlayer() {
         guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
-            print("Video file not found: \(videoName).mp4")
             return
         }
 
         let playerItem = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: playerItem)
-        newPlayer.isMuted = true // Video is muted, only ambient audio plays
+        newPlayer.isMuted = true
+        newPlayer.automaticallyWaitsToMinimizeStalling = false
 
         // Loop the video
         NotificationCenter.default.addObserver(
@@ -55,5 +53,32 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
+        newPlayer.play()
+    }
+}
+
+// Lightweight video player using AVPlayerLayer
+struct VideoPlayerLayerView: UIViewRepresentable {
+    let player: AVPlayer
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.videoGravity = .resizeAspectFill
+        view.layer.addSublayer(playerLayer)
+        context.coordinator.playerLayer = playerLayer
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        context.coordinator.playerLayer?.frame = uiView.bounds
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator {
+        var playerLayer: AVPlayerLayer?
     }
 }

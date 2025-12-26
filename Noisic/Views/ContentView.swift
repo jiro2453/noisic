@@ -28,6 +28,7 @@ struct ContentView: View {
                 ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
                     VideoPlayerView(videoName: sound.videoFileName)
                         .tag(index)
+                        .id(index) // Optimize view identity for better performance
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
@@ -297,6 +298,7 @@ struct VinylRecordView: View {
                         .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
                 )
         }
+        .drawingGroup() // Render vinyl record to offscreen buffer for better performance
         .rotationEffect(.degrees(rotation))
         .onAppear {
             if isRotating {

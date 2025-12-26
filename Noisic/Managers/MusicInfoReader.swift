@@ -32,8 +32,8 @@ class MusicInfoReader: ObservableObject {
         // Update immediately
         updateMusicInfo()
 
-        // Poll for updates every 0.5 seconds for smoother playback tracking
-        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
+        // Poll for updates every 1 second (reduced from 0.5 for better performance)
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateMusicInfo()
         }
     }
