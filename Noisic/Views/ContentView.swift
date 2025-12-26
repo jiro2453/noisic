@@ -148,14 +148,10 @@ struct MusicPlayerView: View {
         VStack(spacing: 20) {
             // Album Artwork as Vinyl Record (Larger)
             VStack {
-                if musicInfo.isPlaying {
-                    if let artwork = musicInfo.artwork {
-                        VinylRecordView(artwork: artwork, isRotating: true, rotation: $rotation)
-                    } else {
-                        VinylRecordView(artwork: nil, isRotating: true, rotation: $rotation)
-                    }
+                if let artwork = musicInfo.artwork {
+                    VinylRecordView(artwork: artwork, isRotating: musicInfoReader.isPlaying, rotation: $rotation)
                 } else {
-                    VinylRecordView(artwork: nil, isRotating: false, rotation: $rotation)
+                    VinylRecordView(artwork: nil, isRotating: musicInfoReader.isPlaying, rotation: $rotation)
                 }
             }
             .allowsHitTesting(false)
@@ -190,7 +186,7 @@ struct MusicPlayerView: View {
                     )
                     .accentColor(.white)
                     .frame(maxWidth: 300)
-                    .disabled(!musicInfo.isPlaying)
+                    .disabled(musicInfo.title == nil)
 
                     // Time Labels
                     HStack {
@@ -207,7 +203,7 @@ struct MusicPlayerView: View {
                     .frame(maxWidth: 300)
                 }
                 .padding(.horizontal, 10)
-                .opacity(musicInfo.isPlaying ? 1.0 : 0.4)
+                .opacity(musicInfo.title != nil ? 1.0 : 0.4)
 
                 // Playback Control Buttons (Stylish)
                 HStack(spacing: 40) {
@@ -219,7 +215,7 @@ struct MusicPlayerView: View {
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundColor(.white)
                     }
-                    .disabled(!musicInfo.isPlaying)
+                    .disabled(musicInfo.title == nil)
 
                     // Play/Pause Button
                     Button(action: {
@@ -230,7 +226,7 @@ struct MusicPlayerView: View {
                             .foregroundColor(.white)
                             .offset(x: musicInfoReader.isPlaying ? 0 : 2)
                     }
-                    .disabled(!musicInfo.isPlaying)
+                    .disabled(musicInfo.title == nil)
 
                     // Next Button
                     Button(action: {
@@ -240,10 +236,10 @@ struct MusicPlayerView: View {
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundColor(.white)
                     }
-                    .disabled(!musicInfo.isPlaying)
+                    .disabled(musicInfo.title == nil)
                 }
                 .shadow(color: .black.opacity(0.6), radius: 15, x: 0, y: 5)
-                .opacity(musicInfo.isPlaying ? 1.0 : 0.4)
+                .opacity(musicInfo.title != nil ? 1.0 : 0.4)
             }
 
             // Ambient Sound Controls
@@ -328,21 +324,28 @@ struct VinylRecordView: View {
         .rotationEffect(.degrees(rotation))
         .onAppear {
             if isRotating {
-                withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
-                    rotation = 360
-                }
+                startRotation()
             }
         }
         .onChange(of: isRotating) { newValue in
             if newValue {
-                withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
-                    rotation = 360
-                }
+                startRotation()
             } else {
-                withAnimation(.linear(duration: 0.5)) {
-                    rotation = 0
-                }
+                stopRotation()
             }
+        }
+    }
+
+    private func startRotation() {
+        rotation = 0
+        withAnimation(.linear(duration: 6).repeatForever(autoreverses: false)) {
+            rotation = 360
+        }
+    }
+
+    private func stopRotation() {
+        withAnimation(.linear(duration: 0.5)) {
+            rotation = 0
         }
     }
 }

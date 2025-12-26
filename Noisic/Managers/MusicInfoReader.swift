@@ -18,10 +18,13 @@ class MusicInfoReader: ObservableObject {
     private let player = MPMusicPlayerController.systemMusicPlayer
 
     init() {
+        // Enable playback notifications
+        player.beginGeneratingPlaybackNotifications()
         startMonitoring()
     }
 
     deinit {
+        player.endGeneratingPlaybackNotifications()
         stopMonitoring()
     }
 
@@ -72,23 +75,35 @@ class MusicInfoReader: ObservableObject {
         if player.playbackState == .playing {
             player.pause()
         } else {
-            player.play()
+            // If there's a current item, play it
+            if player.nowPlayingItem != nil {
+                player.play()
+            }
         }
-        updateMusicInfo()
+        // Update immediately after action
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.updateMusicInfo()
+        }
     }
 
     func skipToNext() {
         player.skipToNextItem()
-        updateMusicInfo()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.updateMusicInfo()
+        }
     }
 
     func skipToPrevious() {
         player.skipToPreviousItem()
-        updateMusicInfo()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.updateMusicInfo()
+        }
     }
 
     func seek(to time: TimeInterval) {
         player.currentPlaybackTime = time
-        updateMusicInfo()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.updateMusicInfo()
+        }
     }
 }
