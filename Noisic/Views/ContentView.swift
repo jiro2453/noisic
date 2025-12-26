@@ -127,12 +127,27 @@ struct ContentView: View {
             .padding(.horizontal, 20)
         }
         .onAppear {
+            NSLog("=== ContentView appeared ===")
             print("=== ContentView appeared ===")
+
+            // Check if audio files exist
+            for sound in AmbientSound.allCases {
+                if let url = Bundle.main.url(forResource: sound.rawValue, withExtension: "mp3") {
+                    NSLog("✓ Found audio file: %@ at %@", sound.rawValue, url.path)
+                    print("✓ Found audio file: \(sound.rawValue) at \(url.path)")
+                } else {
+                    NSLog("❌ Missing audio file: %@.mp3", sound.rawValue)
+                    print("❌ Missing audio file: \(sound.rawValue).mp3")
+                }
+            }
+
             // Auto-play first sound on launch
             if !audioManager.isPlaying {
+                NSLog("Starting auto-play of first ambient sound")
                 print("Starting auto-play of first ambient sound")
                 audioManager.play(sound: AmbientSound.allCases[0])
             } else {
+                NSLog("Audio already playing, skipping auto-play")
                 print("Audio already playing, skipping auto-play")
             }
         }
@@ -277,6 +292,26 @@ struct MusicPlayerView: View {
                 }
                 .frame(maxWidth: 260)
             }
+
+            // Debug Info (Temporary)
+            VStack(spacing: 4) {
+                Text("Debug Info:")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.yellow)
+                Text("Audio Playing: \(audioManager.isPlaying ? "YES" : "NO")")
+                    .font(.system(size: 10))
+                    .foregroundColor(.white)
+                Text("Current Sound: \(audioManager.currentSound?.displayName ?? "None")")
+                    .font(.system(size: 10))
+                    .foregroundColor(.white)
+                Text("Volume: \(String(format: "%.2f", audioManager.volume))")
+                    .font(.system(size: 10))
+                    .foregroundColor(.white)
+            }
+            .padding(8)
+            .background(Color.black.opacity(0.6))
+            .cornerRadius(8)
+            .padding(.bottom, 20)
         }
     }
 }
