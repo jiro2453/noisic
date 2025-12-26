@@ -223,15 +223,9 @@ struct MusicPlayerView: View {
                     Button(action: {
                         musicInfoReader.skipToPrevious()
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.15))
-                                .frame(width: 60, height: 60)
-
-                            Image(systemName: "backward.fill")
-                                .font(.system(size: 26, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.white)
                     }
                     .disabled(!musicInfo.isPlaying)
 
@@ -239,29 +233,10 @@ struct MusicPlayerView: View {
                     Button(action: {
                         musicInfoReader.playPause()
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color.white.opacity(0.3),
-                                            Color.white.opacity(0.15)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 80, height: 80)
-
-                            Circle()
-                                .stroke(Color.white.opacity(0.3), lineWidth: 2)
-                                .frame(width: 80, height: 80)
-
-                            Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
-                                .font(.system(size: 32, weight: .bold))
-                                .foregroundColor(.white)
-                                .offset(x: musicInfoReader.isPlaying ? 0 : 2)
-                        }
+                        Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.white)
+                            .offset(x: musicInfoReader.isPlaying ? 0 : 2)
                     }
                     .disabled(!musicInfo.isPlaying)
 
@@ -269,15 +244,9 @@ struct MusicPlayerView: View {
                     Button(action: {
                         musicInfoReader.skipToNext()
                     }) {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white.opacity(0.15))
-                                .frame(width: 60, height: 60)
-
-                            Image(systemName: "forward.fill")
-                                .font(.system(size: 26, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(.white)
                     }
                     .disabled(!musicInfo.isPlaying)
                 }
