@@ -100,7 +100,7 @@ struct ContentView: View {
                                 get: { audioManager.volume },
                                 set: { audioManager.setVolume($0) }
                             ),
-                            in: 0...2
+                            in: 1...4
                         )
                         .accentColor(.white.opacity(0.55))
                         .frame(width: 180)
