@@ -34,7 +34,7 @@ struct CustomSlider: View {
 
                 // Thumb
                 Circle()
-                    .fill(Color.gray.opacity(0.8))
+                    .fill(Color.gray)
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
                     .gesture(
@@ -79,7 +79,7 @@ struct CustomSliderDouble: View {
 
                 // Thumb
                 Circle()
-                    .fill(Color.gray.opacity(0.8))
+                    .fill(Color.gray)
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
                     .gesture(
