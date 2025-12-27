@@ -234,22 +234,22 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
 
-                // Music Library Sheet
-                MusicLibrarySheet(
-                    offset: $sheetOffset,
-                    isExpanded: $isLibraryExpanded,
-                    maxHeight: geometry.size.height * 0.7
-                )
+            // Music Library Sheet
+            MusicLibrarySheet(
+                offset: $sheetOffset,
+                isExpanded: $isLibraryExpanded,
+                maxHeight: geometry.size.height * 0.7
+            )
+            .zIndex(100)
+        }
+        .onAppear {
+            // Auto-play bonfire on launch
+            if !audioManager.isPlaying {
+                audioManager.play(sound: .bonfire)
             }
-            .onAppear {
-                // Auto-play bonfire on launch
-                if !audioManager.isPlaying {
-                    audioManager.play(sound: .bonfire)
-                }
-                // Initialize sheet offset on first appear
-                if sheetOffset == 1000 {
-                    sheetOffset = geometry.size.height * 0.7 - 60
-                }
+            // Initialize sheet offset on first appear
+            if sheetOffset == 1000 {
+                sheetOffset = geometry.size.height * 0.7 - 60
             }
         }
     }
