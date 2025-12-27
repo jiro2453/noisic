@@ -83,6 +83,8 @@ struct CustomSliderDouble: View {
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
             }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in
@@ -94,7 +96,7 @@ struct CustomSliderDouble: View {
                     }
             )
         }
-        .frame(height: thumbSize)
+        .frame(height: 44)
     }
 }
 
@@ -302,6 +304,7 @@ struct MusicPlayerView: View {
                     }
                     .frame(maxWidth: 300)
                     .opacity(musicInfo.title != nil ? 0.5 : 0.2)
+                    .allowsHitTesting(false)
                 }
                 .padding(.horizontal, 10)
 
