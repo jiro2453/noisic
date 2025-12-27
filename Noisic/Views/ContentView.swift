@@ -233,11 +233,23 @@ struct ContentView: View {
                     .allowsHitTesting(false)
             }
             .padding(.horizontal, 20)
-        }
-        .onAppear {
-            // Auto-play bonfire on launch
-            if !audioManager.isPlaying {
-                audioManager.play(sound: .bonfire)
+
+                // Music Library Sheet
+                MusicLibrarySheet(
+                    offset: $sheetOffset,
+                    isExpanded: $isLibraryExpanded,
+                    maxHeight: geometry.size.height * 0.7
+                )
+            }
+            .onAppear {
+                // Auto-play bonfire on launch
+                if !audioManager.isPlaying {
+                    audioManager.play(sound: .bonfire)
+                }
+                // Initialize sheet offset on first appear
+                if sheetOffset == 1000 {
+                    sheetOffset = geometry.size.height * 0.7 - 60
+                }
             }
         }
     }
@@ -359,20 +371,6 @@ struct MusicPlayerView: View {
                 }
                 .shadow(color: .black.opacity(0.6), radius: 15, x: 0, y: 5)
                 .opacity(musicInfo.title != nil ? 0.55 : 0.2)
-            }
-
-                // Music Library Sheet
-                MusicLibrarySheet(
-                    offset: $sheetOffset,
-                    isExpanded: $isLibraryExpanded,
-                    maxHeight: geometry.size.height * 0.7
-                )
-            }
-            .onAppear {
-                // Initialize sheet offset on first appear
-                if sheetOffset == 1000 {
-                    sheetOffset = geometry.size.height * 0.7 - 60
-                }
             }
         }
     }
