@@ -28,11 +28,11 @@ struct ContentView: View {
                 ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
                     VideoPlayerView(videoName: sound.videoFileName)
                         .tag(index)
+                        .id(index)
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.3), value: currentIndex)
             .onChange(of: currentIndex) { newValue in
                 // Auto-play ambient sound when swiping
                 let sound = extendedSounds[newValue]
