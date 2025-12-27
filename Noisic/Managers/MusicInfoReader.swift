@@ -56,7 +56,34 @@ class MusicInfoReader: ObservableObject {
 
         let title = nowPlaying.title
         let artist = nowPlaying.artist
-        let artwork = nowPlaying.artwork?.image(at: CGSize(width: 300, height: 300))
+
+        // Try multiple sizes to ensure artwork is retrieved
+        let artwork: UIImage? = {
+            guard let artworkCatalog = nowPlaying.artwork else { return nil }
+
+            // Try different sizes in order of preference
+            let sizes = [
+                CGSize(width: 600, height: 600),
+                CGSize(width: 300, height: 300),
+                CGSize(width: 200, height: 200),
+                CGSize(width: 100, height: 100)
+            ]
+
+            for size in sizes {
+                if let image = artworkCatalog.image(at: size) {
+                    return image
+                }
+            }
+
+            // Fallback to bounds size
+            let boundsSize = artworkCatalog.bounds.size
+            if boundsSize.width > 0 && boundsSize.height > 0 {
+                return artworkCatalog.image(at: boundsSize)
+            }
+
+            return nil
+        }()
+
         let playing = player.playbackState == .playing
         let time = player.currentPlaybackTime
         let trackDuration = nowPlaying.playbackDuration
