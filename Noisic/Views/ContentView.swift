@@ -102,8 +102,7 @@ struct ContentView: View {
                             ),
                             in: 1...4
                         )
-                        .tint(.white)
-                        .opacity(0.5)
+                        .tint(.white.opacity(0.5))
                         .frame(width: 180)
 
                         Image(systemName: "speaker.wave.3.fill")
@@ -190,8 +189,7 @@ struct MusicPlayerView: View {
                         ),
                         in: 0...max(musicInfoReader.duration, 1)
                     )
-                    .tint(.white)
-                    .opacity(0.5)
+                    .tint(.white.opacity(0.5))
                     .frame(maxWidth: 300)
                     .disabled(musicInfo.title == nil)
 
