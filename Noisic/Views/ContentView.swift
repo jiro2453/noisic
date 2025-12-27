@@ -327,9 +327,9 @@ struct VinylRecordView: View {
     }
 
     private func stopRotation() {
-        // Stop animation and preserve current position
+        // Stop animation immediately and preserve current position
         let currentRotation = rotation.truncatingRemainder(dividingBy: 360)
-        withAnimation(.none) {
+        withAnimation(.linear(duration: 0.0)) {
             rotation = currentRotation
         }
     }
