@@ -476,5 +476,6 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
             .environmentObject(AudioManager())
             .environmentObject(MusicInfoReader())
+            .environmentObject(LibraryManager())
     }
 }
