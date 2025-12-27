@@ -75,16 +75,19 @@ struct ContentView: View {
                     HStack(spacing: 20) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(.white)
+                            .opacity(0.4)
 
                         Image(systemName: AmbientSound.allCases[actualIndex].icon)
                             .font(.system(size: 36))
-                            .foregroundColor(.white.opacity(0.55))
+                            .foregroundColor(.white)
                             .frame(width: 40, height: 40)
+                            .opacity(0.55)
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(.white)
+                            .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
                     .allowsHitTesting(false)
@@ -93,7 +96,7 @@ struct ContentView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "speaker.fill")
                             .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white)
 
                         Slider(
                             value: Binding(
@@ -103,13 +106,13 @@ struct ContentView: View {
                             in: 1...4
                         )
                         .tint(.white)
-                        .opacity(0.5)
                         .frame(width: 180)
 
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.system(size: 11))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white)
                     }
+                    .opacity(0.5)
                     .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
@@ -166,17 +169,18 @@ struct MusicPlayerView: View {
             VStack(spacing: 4) {
                 Text(musicInfo.title ?? "Unknown Track")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.55))
+                    .foregroundColor(.white)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
 
                 Text(musicInfo.artist ?? "Unknown Artist")
                     .font(.system(size: 14))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.white)
                     .lineLimit(1)
                     .shadow(color: .black.opacity(0.5), radius: 5)
             }
             .frame(maxWidth: 300)
+            .opacity(0.55)
             .allowsHitTesting(false)
 
             // Music Playback Controls (Always Visible)
@@ -191,7 +195,6 @@ struct MusicPlayerView: View {
                         in: 0...max(musicInfoReader.duration, 1)
                     )
                     .tint(.white)
-                    .opacity(0.5)
                     .frame(maxWidth: 300)
                     .disabled(musicInfo.title == nil)
 
@@ -199,18 +202,18 @@ struct MusicPlayerView: View {
                     HStack {
                         Text(formatTime(musicInfoReader.currentTime))
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white)
 
                         Spacer()
 
                         Text(formatTime(musicInfoReader.duration))
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.white.opacity(0.5))
+                            .foregroundColor(.white)
                     }
                     .frame(maxWidth: 300)
                 }
                 .padding(.horizontal, 10)
-                .opacity(musicInfo.title != nil ? 1.0 : 0.4)
+                .opacity(musicInfo.title != nil ? 0.5 : 0.2)
 
                 // Playback Control Buttons (Stylish)
                 HStack(spacing: 40) {
@@ -220,7 +223,7 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: "backward.fill")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.55))
+                            .foregroundColor(.white)
                     }
                     .disabled(musicInfo.title == nil)
 
@@ -230,7 +233,7 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
                             .font(.system(size: 40, weight: .bold))
-                            .foregroundColor(.white.opacity(0.55))
+                            .foregroundColor(.white)
                             .offset(x: musicInfoReader.isPlaying ? 0 : 2)
                     }
                     .disabled(musicInfo.title == nil)
@@ -241,12 +244,12 @@ struct MusicPlayerView: View {
                     }) {
                         Image(systemName: "forward.fill")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(.white.opacity(0.55))
+                            .foregroundColor(.white)
                     }
                     .disabled(musicInfo.title == nil)
                 }
                 .shadow(color: .black.opacity(0.6), radius: 15, x: 0, y: 5)
-                .opacity(musicInfo.title != nil ? 1.0 : 0.4)
+                .opacity(musicInfo.title != nil ? 0.55 : 0.2)
             }
         }
     }
