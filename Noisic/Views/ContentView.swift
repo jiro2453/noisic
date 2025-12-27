@@ -301,9 +301,9 @@ struct MusicPlayerView: View {
                             .foregroundColor(.white)
                     }
                     .frame(maxWidth: 300)
+                    .opacity(musicInfo.title != nil ? 0.5 : 0.2)
                 }
                 .padding(.horizontal, 10)
-                .opacity(musicInfo.title != nil ? 0.5 : 0.2)
 
                 // Playback Control Buttons (Stylish)
                 HStack(spacing: 40) {
