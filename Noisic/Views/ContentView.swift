@@ -38,18 +38,18 @@ struct ContentView: View {
                 let sound = extendedSounds[newValue]
                 audioManager.play(sound: sound)
 
-                // Handle infinite loop by jumping to middle set (with delay to avoid interference)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    if newValue < AmbientSound.allCases.count {
-                        // Jumped to first set, move to middle set
-                        withAnimation(.none) {
-                            currentIndex = newValue + AmbientSound.allCases.count
-                        }
-                    } else if newValue >= AmbientSound.allCases.count * 2 {
-                        // Jumped to third set, move to middle set
-                        withAnimation(.none) {
-                            currentIndex = newValue - AmbientSound.allCases.count
-                        }
+                // Handle infinite loop by jumping to middle set
+                // Only jump when at the edges (first 2 or last 2 items)
+                let count = AmbientSound.allCases.count
+                if newValue <= 1 {
+                    // At start of first set, jump to same position in middle set
+                    DispatchQueue.main.async {
+                        currentIndex = newValue + count
+                    }
+                } else if newValue >= (count * 3) - 2 {
+                    // At end of third set, jump to same position in middle set
+                    DispatchQueue.main.async {
+                        currentIndex = newValue - count
                     }
                 }
             }
