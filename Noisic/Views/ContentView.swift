@@ -38,6 +38,8 @@ struct CustomSlider: View {
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
             }
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { gesture in
@@ -47,7 +49,7 @@ struct CustomSlider: View {
                     }
             )
         }
-        .frame(height: thumbSize)
+        .frame(height: 44)
     }
 }
 
@@ -191,6 +193,7 @@ struct ContentView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.white)
                             .opacity(0.5)
+                            .allowsHitTesting(false)
 
                         CustomSlider(
                             value: Binding(
@@ -205,6 +208,7 @@ struct ContentView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.white)
                             .opacity(0.5)
+                            .allowsHitTesting(false)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 5)
                 }
