@@ -254,6 +254,7 @@ struct VinylRecordView: View {
     let artwork: UIImage?
     let isRotating: Bool
     @Binding var rotation: Double
+    @State private var rotationTimer: Timer?
 
     var body: some View {
         ZStack {
@@ -308,6 +309,10 @@ struct VinylRecordView: View {
                 startRotation()
             }
         }
+        .onDisappear {
+            rotationTimer?.invalidate()
+            rotationTimer = nil
+        }
         .onChange(of: isRotating) { newValue in
             if newValue {
                 startRotation()
@@ -318,20 +323,25 @@ struct VinylRecordView: View {
     }
 
     private func startRotation() {
-        // Continue rotation from current position
-        let currentRotation = rotation.truncatingRemainder(dividingBy: 360)
-        rotation = currentRotation
-        withAnimation(.linear(duration: 12).repeatForever(autoreverses: false)) {
-            rotation = currentRotation + 360
+        // Stop any existing timer
+        rotationTimer?.invalidate()
+
+        // 12秒で360度回転 = 1秒で30度 = 1/60秒で0.5度
+        let degreesPerFrame = 30.0 / 60.0
+
+        rotationTimer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { [self] _ in
+            rotation += degreesPerFrame
+            // Keep rotation within reasonable bounds to avoid overflow
+            if rotation >= 360 {
+                rotation -= 360
+            }
         }
     }
 
     private func stopRotation() {
-        // Stop animation immediately and preserve current position
-        let currentRotation = rotation.truncatingRemainder(dividingBy: 360)
-        withAnimation(.linear(duration: 0.0)) {
-            rotation = currentRotation
-        }
+        // Stop timer and preserve current rotation angle
+        rotationTimer?.invalidate()
+        rotationTimer = nil
     }
 }
 
