@@ -7,6 +7,97 @@
 
 import SwiftUI
 
+// Custom Slider with full-width track (Float version)
+struct CustomSlider: View {
+    @Binding var value: Float
+    let range: ClosedRange<Float>
+    let trackHeight: CGFloat = 4
+    let thumbSize: CGFloat = 20
+
+    var body: some View {
+        GeometryReader { geometry in
+            let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
+            let thumbOffset = percentage * geometry.size.width
+
+            ZStack(alignment: .leading) {
+                // Background track
+                Rectangle()
+                    .fill(Color.white.opacity(0.2))
+                    .frame(height: trackHeight)
+                    .cornerRadius(trackHeight / 2)
+
+                // Active track (from left edge to thumb center)
+                Rectangle()
+                    .fill(Color.white)
+                    .frame(width: thumbOffset, height: trackHeight)
+                    .cornerRadius(trackHeight / 2)
+
+                // Thumb
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: thumbSize, height: thumbSize)
+                    .offset(x: thumbOffset - thumbSize / 2)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { gesture in
+                                let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
+                                let newValue = Float(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
+                                value = newValue
+                            }
+                    )
+            }
+        }
+        .frame(height: thumbSize)
+    }
+}
+
+// Custom Slider with full-width track (Double version)
+struct CustomSliderDouble: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let trackHeight: CGFloat = 4
+    let thumbSize: CGFloat = 20
+    var isDisabled: Bool = false
+
+    var body: some View {
+        GeometryReader { geometry in
+            let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
+            let thumbOffset = percentage * geometry.size.width
+
+            ZStack(alignment: .leading) {
+                // Background track
+                Rectangle()
+                    .fill(Color.white.opacity(0.2))
+                    .frame(height: trackHeight)
+                    .cornerRadius(trackHeight / 2)
+
+                // Active track (from left edge to thumb center)
+                Rectangle()
+                    .fill(Color.white)
+                    .frame(width: thumbOffset, height: trackHeight)
+                    .cornerRadius(trackHeight / 2)
+
+                // Thumb
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: thumbSize, height: thumbSize)
+                    .offset(x: thumbOffset - thumbSize / 2)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { gesture in
+                                if !isDisabled {
+                                    let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
+                                    let newValue = Double(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
+                                    value = newValue
+                                }
+                            }
+                    )
+            }
+        }
+        .frame(height: thumbSize)
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
@@ -98,14 +189,13 @@ struct ContentView: View {
                             .font(.system(size: 11))
                             .foregroundColor(.white)
 
-                        Slider(
+                        CustomSlider(
                             value: Binding(
                                 get: { audioManager.volume },
                                 set: { audioManager.setVolume($0) }
                             ),
-                            in: 1...4
+                            range: 1...4
                         )
-                        .tint(.white)
                         .frame(width: 180)
 
                         Image(systemName: "speaker.wave.3.fill")
@@ -187,16 +277,15 @@ struct MusicPlayerView: View {
             VStack(spacing: 16) {
                 // Seek Bar
                 VStack(spacing: 6) {
-                    Slider(
+                    CustomSliderDouble(
                         value: Binding(
                             get: { musicInfoReader.currentTime },
                             set: { musicInfoReader.seek(to: $0) }
                         ),
-                        in: 0...max(musicInfoReader.duration, 1)
+                        range: 0...max(musicInfoReader.duration, 1),
+                        isDisabled: musicInfo.title == nil
                     )
-                    .tint(.white)
                     .frame(maxWidth: 300)
-                    .disabled(musicInfo.title == nil)
 
                     // Time Labels
                     HStack {
