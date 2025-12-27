@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
-    @State private var currentIndex = 6 // Start from middle of tripled array
+    @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
 
     // Triple the ambient sounds for infinite scrolling effect
     private var extendedSounds: [AmbientSound] {
@@ -128,9 +128,9 @@ struct ContentView: View {
             .padding(.horizontal, 20)
         }
         .onAppear {
-            // Auto-play first sound on launch
+            // Auto-play bonfire on launch
             if !audioManager.isPlaying {
-                audioManager.play(sound: AmbientSound.allCases[0])
+                audioManager.play(sound: .bonfire)
             }
         }
     }
