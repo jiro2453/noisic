@@ -62,22 +62,25 @@ struct MusicLibrarySheet: View {
                     DragGesture()
                         .onChanged { value in
                             let newOffset = offset + value.translation.height
-                            // Limit dragging
-                            if newOffset >= 0 && newOffset <= maxHeight - minHeight {
-                                offset = newOffset
-                            }
+                            let minY = geometry.size.height - maxHeight
+                            let maxY = geometry.size.height - minHeight
+                            // Limit dragging between fully expanded and collapsed
+                            offset = max(minY, min(maxY, newOffset))
                         }
                         .onEnded { value in
                             // Snap to positions
-                            let threshold = maxHeight * 0.3
+                            let minY = geometry.size.height - maxHeight
+                            let maxY = geometry.size.height - minHeight
+                            let midY = (minY + maxY) / 2
+
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                if offset < threshold {
-                                    // Expand
-                                    offset = 0
+                                if offset < midY {
+                                    // Expand (closer to top)
+                                    offset = minY
                                     isExpanded = true
                                 } else {
-                                    // Collapse
-                                    offset = maxHeight - minHeight
+                                    // Collapse (closer to bottom)
+                                    offset = maxY
                                     isExpanded = false
                                 }
                             }
@@ -103,7 +106,7 @@ struct MusicLibrarySheet: View {
                                                     .onTapGesture {
                                                         libraryManager.playTrack(track)
                                                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                            offset = maxHeight - minHeight
+                                                            offset = geometry.size.height - minHeight
                                                             isExpanded = false
                                                         }
                                                     }
@@ -132,7 +135,7 @@ struct MusicLibrarySheet: View {
                                                 .onTapGesture {
                                                     libraryManager.playTrack(track)
                                                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                                        offset = maxHeight - minHeight
+                                                        offset = geometry.size.height - minHeight
                                                         isExpanded = false
                                                     }
                                                 }
@@ -175,7 +178,7 @@ struct MusicLibrarySheet: View {
                     .fill(Color.black.opacity(0.7))
                     .shadow(color: .black.opacity(0.5), radius: 20, y: -5)
             )
-            .offset(y: geometry.size.height - minHeight + offset)
+            .offset(y: offset)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .ignoresSafeArea()
