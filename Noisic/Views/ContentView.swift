@@ -321,6 +321,8 @@ struct MusicPlayerView: View {
                         Image(systemName: "backward.fill")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .contentShape(Rectangle())
                     }
                     .disabled(musicInfo.title == nil)
 
@@ -332,6 +334,8 @@ struct MusicPlayerView: View {
                             .font(.system(size: 40, weight: .bold))
                             .foregroundColor(.white)
                             .offset(x: musicInfoReader.isPlaying ? 0 : 2)
+                            .frame(width: 60, height: 60)
+                            .contentShape(Rectangle())
                     }
                     .disabled(musicInfo.title == nil)
 
@@ -342,6 +346,8 @@ struct MusicPlayerView: View {
                         Image(systemName: "forward.fill")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .contentShape(Rectangle())
                     }
                     .disabled(musicInfo.title == nil)
                 }
