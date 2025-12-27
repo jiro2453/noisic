@@ -188,6 +188,7 @@ struct ContentView: View {
                         Image(systemName: "speaker.fill")
                             .font(.system(size: 11))
                             .foregroundColor(.white)
+                            .opacity(0.5)
 
                         CustomSlider(
                             value: Binding(
@@ -201,8 +202,8 @@ struct ContentView: View {
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.system(size: 11))
                             .foregroundColor(.white)
+                            .opacity(0.5)
                     }
-                    .opacity(0.5)
                     .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
