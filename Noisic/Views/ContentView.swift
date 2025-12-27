@@ -122,18 +122,19 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Background Video Carousel
-            TabView(selection: $currentIndex) {
-                ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
-                    VideoPlayerView(videoName: sound.videoFileName)
-                        .tag(index)
-                        .id(index)
+        GeometryReader { geometry in
+            ZStack {
+                // Background Video Carousel
+                TabView(selection: $currentIndex) {
+                    ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
+                        VideoPlayerView(videoName: sound.videoFileName)
+                            .tag(index)
+                            .id(index)
+                    }
                 }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .ignoresSafeArea()
-            .onChange(of: currentIndex) { newValue in
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .ignoresSafeArea()
+                .onChange(of: currentIndex) { newValue in
                 // Auto-play ambient sound when swiping
                 let sound = extendedSounds[newValue]
                 audioManager.play(sound: sound)
@@ -360,18 +361,17 @@ struct MusicPlayerView: View {
                 .opacity(musicInfo.title != nil ? 0.55 : 0.2)
             }
 
-            // Music Library Sheet
-            GeometryReader { geometry in
+                // Music Library Sheet
                 MusicLibrarySheet(
                     offset: $sheetOffset,
                     isExpanded: $isLibraryExpanded,
                     maxHeight: geometry.size.height * 0.7
                 )
-                .onAppear {
-                    // Initialize sheet offset on first appear
-                    if sheetOffset == 1000 {
-                        sheetOffset = geometry.size.height * 0.7 - 60
-                    }
+            }
+            .onAppear {
+                // Initialize sheet offset on first appear
+                if sheetOffset == 1000 {
+                    sheetOffset = geometry.size.height * 0.7 - 60
                 }
             }
         }
