@@ -19,21 +19,45 @@ struct MusicLibrarySheet: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Handle Area
-                VStack(spacing: 8) {
-                    // Drag Handle
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.4))
-                        .frame(width: 40, height: 6)
-                        .padding(.top, 12)
+                HStack {
+                    if isExpanded {
+                        // Centered handle when expanded
+                        Spacer()
+                    } else {
+                        // Push to right when collapsed
+                        Spacer()
+                    }
 
-                    Text("ライブラリ")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .opacity(isExpanded ? 1 : 0)
+                    VStack(spacing: 8) {
+                        // Drag Handle
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.5))
+                            .frame(width: isExpanded ? 40 : 50, height: 6)
+                            .padding(.top, 12)
+
+                        if isExpanded {
+                            Text("ライブラリ")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        } else {
+                            Image(systemName: "music.note.list")
+                                .font(.system(size: 18))
+                                .foregroundColor(.white.opacity(0.8))
+                        }
+                    }
+                    .frame(width: isExpanded ? nil : 80)
+
+                    if isExpanded {
+                        Spacer()
+                    } else {
+                        Spacer()
+                            .frame(width: 20)
+                    }
                 }
                 .frame(height: 60)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: isExpanded ? .infinity : 100, alignment: isExpanded ? .center : .trailing)
                 .background(Color.black.opacity(0.7))
+                .cornerRadius(isExpanded ? 0 : 20, corners: isExpanded ? [] : [.topLeft])
                 .gesture(
                     DragGesture()
                         .onChanged { value in
@@ -145,15 +169,33 @@ struct MusicLibrarySheet: View {
                     .background(Color.black.opacity(0.85))
                 }
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: isExpanded ? .center : .trailing)
             .background(
-                RoundedRectangle(cornerRadius: isExpanded ? 20 : 10)
+                RoundedRectangle(cornerRadius: isExpanded ? 20 : 20)
                     .fill(Color.black.opacity(0.7))
                     .shadow(color: .black.opacity(0.5), radius: 20, y: -5)
             )
             .offset(y: geometry.size.height - minHeight + offset)
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .ignoresSafeArea()
+    }
+}
+
+// Extension to apply corner radius to specific corners
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
     }
 }
 
