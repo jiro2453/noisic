@@ -37,15 +37,15 @@ struct CustomSlider: View {
                     .fill(Color.gray)
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { gesture in
-                                let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
-                                let newValue = Float(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
-                                value = newValue
-                            }
-                    )
             }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
+                        let newValue = Float(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
+                        value = newValue
+                    }
+            )
         }
         .frame(height: thumbSize)
     }
@@ -82,17 +82,17 @@ struct CustomSliderDouble: View {
                     .fill(Color.gray)
                     .frame(width: thumbSize, height: thumbSize)
                     .offset(x: thumbOffset - thumbSize / 2)
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { gesture in
-                                if !isDisabled {
-                                    let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
-                                    let newValue = Double(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
-                                    value = newValue
-                                }
-                            }
-                    )
             }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { gesture in
+                        if !isDisabled {
+                            let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
+                            let newValue = Double(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
+                            value = newValue
+                        }
+                    }
+            )
         }
         .frame(height: thumbSize)
     }
