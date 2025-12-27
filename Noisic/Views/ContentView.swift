@@ -28,24 +28,28 @@ struct ContentView: View {
                 ForEach(Array(extendedSounds.enumerated()), id: \.offset) { index, sound in
                     VideoPlayerView(videoName: sound.videoFileName)
                         .tag(index)
-                        .id(index) // Optimize view identity for better performance
                 }
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
+            .animation(.easeInOut(duration: 0.3), value: currentIndex)
             .onChange(of: currentIndex) { newValue in
                 // Auto-play ambient sound when swiping
                 let sound = extendedSounds[newValue]
                 audioManager.play(sound: sound)
 
-                // Handle infinite loop by jumping to middle set
-                DispatchQueue.main.async {
+                // Handle infinite loop by jumping to middle set (with delay to avoid interference)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     if newValue < AmbientSound.allCases.count {
                         // Jumped to first set, move to middle set
-                        currentIndex = newValue + AmbientSound.allCases.count
+                        withAnimation(.none) {
+                            currentIndex = newValue + AmbientSound.allCases.count
+                        }
                     } else if newValue >= AmbientSound.allCases.count * 2 {
                         // Jumped to third set, move to middle set
-                        currentIndex = newValue - AmbientSound.allCases.count
+                        withAnimation(.none) {
+                            currentIndex = newValue - AmbientSound.allCases.count
+                        }
                     }
                 }
             }

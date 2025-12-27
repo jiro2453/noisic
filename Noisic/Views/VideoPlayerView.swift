@@ -45,6 +45,9 @@ struct VideoPlayerView: View {
         newPlayer.isMuted = true
         newPlayer.automaticallyWaitsToMinimizeStalling = false
 
+        // Preload and prepare for immediate playback
+        newPlayer.actionAtItemEnd = .none
+
         // Loop the video
         NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
@@ -56,6 +59,12 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
+
+        // Start playing immediately after setup
+        DispatchQueue.main.async {
+            newPlayer.play()
+        }
+
         print("✅ Video player setup complete: \(videoName).mp4")
     }
 }
