@@ -19,73 +19,52 @@ struct MusicLibrarySheet: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Handle Area
-                HStack {
-                    if isExpanded {
-                        // Centered handle when expanded
+                if isExpanded {
+                    // Expanded: Traditional handle
+                    HStack {
                         Spacer()
-                    } else {
-                        // Push to right when collapsed
-                        Spacer()
-                    }
 
-                    VStack(spacing: 8) {
-                        // Drag Handle
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.white.opacity(0.5))
-                            .frame(width: isExpanded ? 40 : 50, height: 6)
-                            .padding(.top, 12)
+                        VStack(spacing: 8) {
+                            // Drag Handle
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(Color.white.opacity(0.5))
+                                .frame(width: 40, height: 6)
+                                .padding(.top, 12)
 
-                        if isExpanded {
                             Text("ライブラリ")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
-                        } else {
-                            Image(systemName: "music.note.list")
-                                .font(.system(size: 18))
-                                .foregroundColor(.white.opacity(0.8))
                         }
-                    }
-                    .frame(width: isExpanded ? nil : 80)
 
-                    if isExpanded {
                         Spacer()
-                    } else {
-                        Spacer()
-                            .frame(width: 20)
                     }
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.black.opacity(0.7))
+                    .gesture(dragGesture(geometry: geometry))
+                } else {
+                    // Collapsed: Circular peek from bottom-right corner
+                    ZStack {
+                        // Large circle (mostly off-screen)
+                        Circle()
+                            .fill(Color.black.opacity(0.75))
+                            .frame(width: 100, height: 100)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                            )
+                            .overlay(
+                                Image(systemName: "music.note.list")
+                                    .font(.system(size: 22, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.9))
+                                    .offset(x: -15, y: -15)
+                            )
+                            .offset(x: 35, y: 35) // Position so only top-left quadrant is visible
+                    }
+                    .frame(width: 60, height: 60, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, maxHeight: 60, alignment: .bottomTrailing)
+                    .gesture(dragGesture(geometry: geometry))
                 }
-                .frame(height: 60)
-                .frame(maxWidth: isExpanded ? .infinity : 100, alignment: isExpanded ? .center : .trailing)
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(isExpanded ? 0 : 20, corners: isExpanded ? [] : [.topLeft])
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            let newOffset = offset + value.translation.height
-                            let minY = geometry.size.height - maxHeight
-                            let maxY = geometry.size.height - minHeight
-                            // Limit dragging between fully expanded and collapsed
-                            offset = max(minY, min(maxY, newOffset))
-                        }
-                        .onEnded { value in
-                            // Snap to positions
-                            let minY = geometry.size.height - maxHeight
-                            let maxY = geometry.size.height - minHeight
-                            let midY = (minY + maxY) / 2
-
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                if offset < midY {
-                                    // Expand (closer to top)
-                                    offset = minY
-                                    isExpanded = true
-                                } else {
-                                    // Collapse (closer to bottom)
-                                    offset = maxY
-                                    isExpanded = false
-                                }
-                            }
-                        }
-                )
 
                 // Content Area
                 if isExpanded {
@@ -172,16 +151,45 @@ struct MusicLibrarySheet: View {
                     .background(Color.black.opacity(0.85))
                 }
             }
-            .frame(maxWidth: .infinity, alignment: isExpanded ? .center : .trailing)
+            .frame(maxWidth: .infinity, alignment: .trailing)
             .background(
-                RoundedRectangle(cornerRadius: isExpanded ? 20 : 20)
-                    .fill(Color.black.opacity(0.7))
-                    .shadow(color: .black.opacity(0.5), radius: 20, y: -5)
+                RoundedRectangle(cornerRadius: isExpanded ? 20 : 0)
+                    .fill(Color.black.opacity(isExpanded ? 0.7 : 0.0))
+                    .shadow(color: .black.opacity(isExpanded ? 0.5 : 0), radius: 20, y: -5)
             )
             .offset(y: offset)
             .frame(maxWidth: .infinity, alignment: .trailing)
         }
         .ignoresSafeArea()
+    }
+
+    private func dragGesture(geometry: GeometryProxy) -> some Gesture {
+        DragGesture()
+            .onChanged { value in
+                let newOffset = offset + value.translation.height
+                let minY = geometry.size.height - maxHeight
+                let maxY = geometry.size.height - minHeight
+                // Limit dragging between fully expanded and collapsed
+                offset = max(minY, min(maxY, newOffset))
+            }
+            .onEnded { value in
+                // Snap to positions
+                let minY = geometry.size.height - maxHeight
+                let maxY = geometry.size.height - minHeight
+                let midY = (minY + maxY) / 2
+
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    if offset < midY {
+                        // Expand (closer to top)
+                        offset = minY
+                        isExpanded = true
+                    } else {
+                        // Collapse (closer to bottom)
+                        offset = maxY
+                        isExpanded = false
+                    }
+                }
+            }
     }
 }
 
