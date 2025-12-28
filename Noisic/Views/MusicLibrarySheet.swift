@@ -12,7 +12,7 @@ struct MusicLibrarySheet: View {
     @Binding var offset: CGFloat
     @Binding var isExpanded: Bool
 
-    let minHeight: CGFloat = 60 // Handle only
+    let minHeight: CGFloat = 80 // Handle only (circular peek)
     let maxHeight: CGFloat
 
     var body: some View {
@@ -48,21 +48,21 @@ struct MusicLibrarySheet: View {
                         // Large circle (mostly off-screen)
                         Circle()
                             .fill(Color.black.opacity(0.75))
-                            .frame(width: 100, height: 100)
+                            .frame(width: 120, height: 120)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 2)
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 2)
                             )
                             .overlay(
                                 Image(systemName: "music.note.list")
-                                    .font(.system(size: 22, weight: .medium))
+                                    .font(.system(size: 24, weight: .medium))
                                     .foregroundColor(.white.opacity(0.9))
-                                    .offset(x: -15, y: -15)
+                                    .offset(x: -20, y: -20)
                             )
-                            .offset(x: 35, y: 35) // Position so only top-left quadrant is visible
+                            .offset(x: 30, y: 30) // Position so top-left portion is more visible
                     }
-                    .frame(width: 60, height: 60, alignment: .topLeading)
-                    .frame(maxWidth: .infinity, maxHeight: 60, alignment: .bottomTrailing)
+                    .frame(width: 80, height: 80, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, maxHeight: 80, alignment: .bottomTrailing)
                     .gesture(dragGesture(geometry: geometry))
                 }
 
