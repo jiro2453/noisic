@@ -151,7 +151,7 @@ struct MusicLibrarySheet: View {
         DragGesture()
             .onChanged { value in
                 // Calculate diagonal drag (left-up direction)
-                let diagonalDistance = -(value.translation.x + value.translation.y) / 2
+                let diagonalDistance = -(value.translation.width + value.translation.height) / 2
                 let newOffset = offset - diagonalDistance
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
@@ -159,8 +159,8 @@ struct MusicLibrarySheet: View {
                 offset = max(minY, min(maxY, newOffset))
             }
             .onEnded { value in
-                // Check if dragged left-up (negative x and negative y)
-                let draggedLeftUp = value.translation.x < -30 || value.translation.y < -30
+                // Check if dragged left-up (negative width and negative height)
+                let draggedLeftUp = value.translation.width < -30 || value.translation.height < -30
 
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
@@ -170,7 +170,7 @@ struct MusicLibrarySheet: View {
                         // Expand when dragged left-up
                         offset = minY
                         isExpanded = true
-                    } else if isExpanded && (value.translation.x > 30 || value.translation.y > 30) {
+                    } else if isExpanded && (value.translation.width > 30 || value.translation.height > 30) {
                         // Collapse when dragged right-down
                         offset = maxY
                         isExpanded = false
