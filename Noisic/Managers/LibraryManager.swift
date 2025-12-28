@@ -8,17 +8,17 @@
 import MediaPlayer
 import Combine
 
-struct LibraryTrack: Identifiable {
+struct LibraryAlbum: Identifiable {
     let id: UInt64
-    let title: String
+    let title: String?
     let artist: String?
     let artwork: UIImage?
-    let mediaItem: MPMediaItem
+    let collection: MPMediaItemCollection
 }
 
 class LibraryManager: ObservableObject {
-    @Published var recentlyAdded: [LibraryTrack] = []
-    @Published var allSongs: [LibraryTrack] = []
+    @Published var recentlyAdded: [LibraryAlbum] = []
+    @Published var allAlbums: [LibraryAlbum] = []
     @Published var isAuthorized = false
 
     init() {
@@ -48,68 +48,67 @@ class LibraryManager: ObservableObject {
 
     func loadLibrary() {
         loadRecentlyAdded()
-        loadAllSongs()
+        loadAllAlbums()
     }
 
     private func loadRecentlyAdded() {
-        let query = MPMediaQuery.songs()
+        let query = MPMediaQuery.albums()
 
-        guard let items = query.items else {
+        guard let collections = query.collections else {
             recentlyAdded = []
             return
         }
 
         // Sort by date added (most recent first)
-        let sortedItems = items.sorted { item1, item2 in
-            let date1 = item1.dateAdded
-            let date2 = item2.dateAdded
+        let sortedCollections = collections.sorted { collection1, collection2 in
+            let date1 = collection1.items.first?.dateAdded ?? Date.distantPast
+            let date2 = collection2.items.first?.dateAdded ?? Date.distantPast
             return date1 > date2
         }
 
-        // Take first 50
-        let recentItems = Array(sortedItems.prefix(50))
+        // Take first 30 albums
+        let recentAlbums = Array(sortedCollections.prefix(30))
 
-        recentlyAdded = recentItems.compactMap { item -> LibraryTrack? in
-            guard let title = item.title else { return nil }
+        recentlyAdded = recentAlbums.compactMap { collection -> LibraryAlbum? in
+            guard let representativeItem = collection.representativeItem else { return nil }
 
-            return LibraryTrack(
-                id: item.persistentID,
-                title: title,
-                artist: item.artist,
-                artwork: item.artwork?.image(at: CGSize(width: 200, height: 200)),
-                mediaItem: item
+            return LibraryAlbum(
+                id: collection.persistentID,
+                title: representativeItem.albumTitle,
+                artist: representativeItem.albumArtist ?? representativeItem.artist,
+                artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                collection: collection
             )
         }
     }
 
-    private func loadAllSongs() {
-        let query = MPMediaQuery.songs()
+    private func loadAllAlbums() {
+        let query = MPMediaQuery.albums()
 
-        guard let items = query.items else {
-            allSongs = []
+        guard let collections = query.collections else {
+            allAlbums = []
             return
         }
 
-        // Take first 100 for performance
-        let limitedItems = Array(items.prefix(100))
+        // Take first 50 albums for performance
+        let limitedCollections = Array(collections.prefix(50))
 
-        allSongs = limitedItems.compactMap { item -> LibraryTrack? in
-            guard let title = item.title else { return nil }
+        allAlbums = limitedCollections.compactMap { collection -> LibraryAlbum? in
+            guard let representativeItem = collection.representativeItem else { return nil }
 
-            return LibraryTrack(
-                id: item.persistentID,
-                title: title,
-                artist: item.artist,
-                artwork: item.artwork?.image(at: CGSize(width: 200, height: 200)),
-                mediaItem: item
+            return LibraryAlbum(
+                id: collection.persistentID,
+                title: representativeItem.albumTitle,
+                artist: representativeItem.albumArtist ?? representativeItem.artist,
+                artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                collection: collection
             )
         }
     }
 
-    func playTrack(_ track: LibraryTrack) {
+    func playAlbum(_ album: LibraryAlbum) {
         let player = MPMusicPlayerController.systemMusicPlayer
-        let collection = MPMediaItemCollection(items: [track.mediaItem])
-        player.setQueue(with: collection)
+        player.setQueue(with: album.collection)
         player.play()
     }
 }
