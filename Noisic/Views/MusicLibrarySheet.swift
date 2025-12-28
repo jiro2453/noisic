@@ -12,7 +12,7 @@ struct MusicLibrarySheet: View {
     @Binding var offset: CGFloat
     @Binding var isExpanded: Bool
 
-    let minHeight: CGFloat = 80 // Handle only (circular peek)
+    let minHeight: CGFloat = 100 // Handle only (circular peek)
     let maxHeight: CGFloat
 
     var body: some View {
@@ -47,22 +47,22 @@ struct MusicLibrarySheet: View {
                     ZStack {
                         // Large circle (mostly off-screen)
                         Circle()
-                            .fill(Color.black.opacity(0.75))
-                            .frame(width: 120, height: 120)
+                            .fill(Color.gray.opacity(0.85))
+                            .frame(width: 140, height: 140)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                                    .stroke(Color.white.opacity(0.4), lineWidth: 2)
                             )
                             .overlay(
                                 Image(systemName: "music.note.list")
-                                    .font(.system(size: 24, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.9))
-                                    .offset(x: -20, y: -20)
+                                    .font(.system(size: 26, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.95))
+                                    .offset(x: -25, y: -25)
                             )
-                            .offset(x: 30, y: 30) // Position so top-left portion is more visible
+                            .offset(x: 20, y: 20) // Position so top-left portion is more visible
                     }
-                    .frame(width: 80, height: 80, alignment: .topLeading)
-                    .frame(maxWidth: .infinity, maxHeight: 80, alignment: .bottomTrailing)
+                    .frame(width: 100, height: 100, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, maxHeight: 100, alignment: .bottomTrailing)
                     .gesture(dragGesture(geometry: geometry))
                 }
 
