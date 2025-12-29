@@ -234,13 +234,15 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
 
-            // Music Library Sheet
+            // Music Library Sheet - 一時的にコメントアウト
+            /*
             MusicLibrarySheet(
                 offset: $sheetOffset,
                 isExpanded: $isLibraryExpanded,
                 maxHeight: geometry.size.height * 0.7
             )
             .zIndex(100)
+            */
             }
             .onAppear {
                 // Auto-play bonfire on launch
