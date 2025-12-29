@@ -142,19 +142,19 @@ struct MusicLibrarySheet: View {
                 // 左上方向へのドラッグで展開（斜め）
                 let diagonalDistance = -(value.translation.width + value.translation.height) / 2
                 let newOffset = offset - diagonalDistance
-                let minY = maxHeight // 展開時：シートの下端 = maxHeight（シート上端が画面上端）
-                let maxY = geometry.size.height // 収縮時：シートの下端 = 画面の高さ
+                let minOffset = maxHeight // 展開時
+                let maxOffset = geometry.size.height // 収縮時
                 // ドラッグ範囲を制限
-                offset = max(minY, min(maxY, newOffset))
+                offset = max(minOffset, min(maxOffset, newOffset))
 
                 // ドラッグ中に幅と高さを変更
-                let dragProgress = max(0, min(1, (maxY - offset) / (maxY - minY)))
+                let dragProgress = max(0, min(1, (maxOffset - offset) / (maxOffset - minOffset)))
                 sheetWidth = 70 + (geometry.size.width - 70) * dragProgress
                 sheetHeight = 60 + (maxHeight - 60) * dragProgress
             }
             .onEnded { value in
-                let minY = maxHeight // 展開時
-                let maxY = geometry.size.height // 収縮時
+                let minOffset = maxHeight // 展開時
+                let maxOffset = geometry.size.height // 収縮時
 
                 // 左上方向へのドラッグを検出
                 let draggedLeftUp = value.translation.width < -30 || value.translation.height < -30
@@ -162,26 +162,26 @@ struct MusicLibrarySheet: View {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     if draggedLeftUp && !isExpanded {
                         // 左上にドラッグで展開
-                        offset = minY
+                        offset = minOffset
                         isExpanded = true
                         sheetWidth = geometry.size.width
                         sheetHeight = maxHeight
                     } else if isExpanded && (value.translation.width > 30 || value.translation.height > 30) {
                         // 右下にドラッグで収縮
-                        offset = maxY
+                        offset = maxOffset
                         isExpanded = false
                         sheetWidth = 70
                         sheetHeight = 60
                     } else {
                         // 位置に基づいてスナップ
-                        let midY = (minY + maxY) / 2
-                        if offset < midY {
-                            offset = minY
+                        let midOffset = (minOffset + maxOffset) / 2
+                        if offset < midOffset {
+                            offset = minOffset
                             isExpanded = true
                             sheetWidth = geometry.size.width
                             sheetHeight = maxHeight
                         } else {
-                            offset = maxY
+                            offset = maxOffset
                             isExpanded = false
                             sheetWidth = 70
                             sheetHeight = 60
