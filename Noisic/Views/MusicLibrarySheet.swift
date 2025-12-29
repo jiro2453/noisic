@@ -134,6 +134,8 @@ struct MusicLibrarySheet: View {
             }
             .onAppear {
                 sheetWidth = isExpanded ? geometry.size.width : 70
+                // Check library authorization when sheet appears
+                libraryManager.checkAuthorization()
             }
         }
         .ignoresSafeArea()

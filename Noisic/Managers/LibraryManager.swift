@@ -21,28 +21,35 @@ class LibraryManager: ObservableObject {
     @Published var allAlbums: [LibraryAlbum] = []
     @Published var isAuthorized = false
 
+    private var hasCheckedAuthorization = false
+
     init() {
-        checkAuthorization()
+        // Don't check authorization in init to avoid blocking
     }
 
     func checkAuthorization() {
-        let status = MPMediaLibrary.authorizationStatus()
+        guard !hasCheckedAuthorization else { return }
+        hasCheckedAuthorization = true
 
-        switch status {
-        case .authorized:
-            isAuthorized = true
-            loadLibrary()
-        case .notDetermined:
-            MPMediaLibrary.requestAuthorization { [weak self] newStatus in
-                DispatchQueue.main.async {
-                    self?.isAuthorized = (newStatus == .authorized)
-                    if newStatus == .authorized {
-                        self?.loadLibrary()
+        DispatchQueue.main.async { [weak self] in
+            let status = MPMediaLibrary.authorizationStatus()
+
+            switch status {
+            case .authorized:
+                self?.isAuthorized = true
+                self?.loadLibrary()
+            case .notDetermined:
+                MPMediaLibrary.requestAuthorization { [weak self] newStatus in
+                    DispatchQueue.main.async {
+                        self?.isAuthorized = (newStatus == .authorized)
+                        if newStatus == .authorized {
+                            self?.loadLibrary()
+                        }
                     }
                 }
+            default:
+                self?.isAuthorized = false
             }
-        default:
-            isAuthorized = false
         }
     }
 
@@ -52,57 +59,73 @@ class LibraryManager: ObservableObject {
     }
 
     private func loadRecentlyAdded() {
-        let query = MPMediaQuery.albums()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let query = MPMediaQuery.albums()
 
-        guard let collections = query.collections else {
-            recentlyAdded = []
-            return
-        }
+            guard let collections = query.collections else {
+                DispatchQueue.main.async {
+                    self?.recentlyAdded = []
+                }
+                return
+            }
 
-        // Sort by date added (most recent first)
-        let sortedCollections = collections.sorted { collection1, collection2 in
-            let date1 = collection1.items.first?.dateAdded ?? Date.distantPast
-            let date2 = collection2.items.first?.dateAdded ?? Date.distantPast
-            return date1 > date2
-        }
+            // Sort by date added (most recent first)
+            let sortedCollections = collections.sorted { collection1, collection2 in
+                let date1 = collection1.items.first?.dateAdded ?? Date.distantPast
+                let date2 = collection2.items.first?.dateAdded ?? Date.distantPast
+                return date1 > date2
+            }
 
-        // Take first 30 albums
-        let recentAlbums = Array(sortedCollections.prefix(30))
+            // Take first 30 albums
+            let recentAlbums = Array(sortedCollections.prefix(30))
 
-        recentlyAdded = recentAlbums.compactMap { collection -> LibraryAlbum? in
-            guard let representativeItem = collection.representativeItem else { return nil }
+            let albums = recentAlbums.compactMap { collection -> LibraryAlbum? in
+                guard let representativeItem = collection.representativeItem else { return nil }
 
-            return LibraryAlbum(
-                id: collection.persistentID,
-                title: representativeItem.albumTitle,
-                artist: representativeItem.albumArtist ?? representativeItem.artist,
-                artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
-                collection: collection
-            )
+                return LibraryAlbum(
+                    id: collection.persistentID,
+                    title: representativeItem.albumTitle,
+                    artist: representativeItem.albumArtist ?? representativeItem.artist,
+                    artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                    collection: collection
+                )
+            }
+
+            DispatchQueue.main.async {
+                self?.recentlyAdded = albums
+            }
         }
     }
 
     private func loadAllAlbums() {
-        let query = MPMediaQuery.albums()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let query = MPMediaQuery.albums()
 
-        guard let collections = query.collections else {
-            allAlbums = []
-            return
-        }
+            guard let collections = query.collections else {
+                DispatchQueue.main.async {
+                    self?.allAlbums = []
+                }
+                return
+            }
 
-        // Take first 50 albums for performance
-        let limitedCollections = Array(collections.prefix(50))
+            // Take first 50 albums for performance
+            let limitedCollections = Array(collections.prefix(50))
 
-        allAlbums = limitedCollections.compactMap { collection -> LibraryAlbum? in
-            guard let representativeItem = collection.representativeItem else { return nil }
+            let albums = limitedCollections.compactMap { collection -> LibraryAlbum? in
+                guard let representativeItem = collection.representativeItem else { return nil }
 
-            return LibraryAlbum(
-                id: collection.persistentID,
-                title: representativeItem.albumTitle,
-                artist: representativeItem.albumArtist ?? representativeItem.artist,
-                artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
-                collection: collection
-            )
+                return LibraryAlbum(
+                    id: collection.persistentID,
+                    title: representativeItem.albumTitle,
+                    artist: representativeItem.albumArtist ?? representativeItem.artist,
+                    artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                    collection: collection
+                )
+            }
+
+            DispatchQueue.main.async {
+                self?.allAlbums = albums
+            }
         }
     }
 
