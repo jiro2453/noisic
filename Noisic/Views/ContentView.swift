@@ -233,9 +233,11 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
 
-            // Music Library Sheet
+            // Music Library Sheet - 再度コメントアウト
+            /*
             MusicLibrarySheet(isExpanded: $isLibraryExpanded)
                 .zIndex(100)
+            */
             }
             .onAppear {
                 // Auto-play bonfire on launch
