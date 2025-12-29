@@ -229,9 +229,9 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
 
-            // Music Library Sheet - 最もシンプルな実装でテスト
-            MusicLibrarySheet()
-                .zIndex(100)
+            // Music Library Sheet - 完全にコメントアウトしてテスト
+            // MusicLibrarySheet()
+            //     .zIndex(100)
             }
             .onAppear {
                 // Auto-play bonfire on launch
