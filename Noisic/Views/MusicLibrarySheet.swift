@@ -18,49 +18,39 @@ struct MusicLibrarySheet: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                // Handle Area
-                if isExpanded {
-                    // Expanded: Traditional handle
-                    HStack {
-                        Spacer()
+                // Header/Handle Area
+                HStack {
+                    Spacer()
 
-                        VStack(spacing: 8) {
-                            // Drag Handle
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(Color.white.opacity(0.5))
-                                .frame(width: 40, height: 6)
-                                .padding(.top, 12)
+                    VStack(spacing: 8) {
+                        // Drag Handle
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color.white.opacity(0.5))
+                            .frame(width: 40, height: 6)
+                            .padding(.top, 12)
 
+                        if isExpanded {
                             Text("ライブラリ")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
+                    }
 
-                        Spacer()
-                    }
-                    .frame(height: 60)
-                    .frame(maxWidth: .infinity)
-                    .background(Color.black.opacity(0.7))
-                    .gesture(dragGesture(geometry: geometry))
-                } else {
-                    // Collapsed: Circular peek from bottom-right corner
-                    ZStack {
-                        // Large circle (mostly off-screen) - transparent
-                        Circle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 140, height: 140)
-                            .overlay(
-                                Image(systemName: "music.note.list")
-                                    .font(.system(size: 26, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
-                                    .offset(x: -25, y: -25)
-                            )
-                            .offset(x: 20, y: 20) // Position so top-left portion is more visible
-                    }
-                    .frame(width: 100, height: 100, alignment: .topLeading)
-                    .frame(maxWidth: .infinity, maxHeight: 100, alignment: .bottomTrailing)
-                    .gesture(dragGesture(geometry: geometry))
+                    Spacer()
                 }
+                .frame(height: isExpanded ? 60 : 100)
+                .frame(maxWidth: .infinity)
+                .overlay(alignment: .bottomTrailing) {
+                    // Collapsed state: show icon in bottom-right
+                    if !isExpanded {
+                        Image(systemName: "music.note.list")
+                            .font(.system(size: 26, weight: .medium))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.trailing, 35)
+                            .padding(.bottom, 35)
+                    }
+                }
+                .gesture(dragGesture(geometry: geometry))
 
                 // Content Area
                 if isExpanded {
@@ -132,14 +122,19 @@ struct MusicLibrarySheet: View {
                         .padding(.vertical, 16)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.85))
                 }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
             .background(
-                RoundedRectangle(cornerRadius: isExpanded ? 20 : 0)
-                    .fill(Color.black.opacity(isExpanded ? 0.7 : 0.0))
-                    .shadow(color: .black.opacity(isExpanded ? 0.5 : 0), radius: 20, y: -5)
+                // 右下角だけ大きく丸めたシート背景
+                UnevenRoundedRectangle(
+                    topLeadingRadius: isExpanded ? 20 : 0,
+                    bottomLeadingRadius: 0,
+                    bottomTrailingRadius: isExpanded ? 0 : 60,
+                    topTrailingRadius: isExpanded ? 20 : 0
+                )
+                .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
+                .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
             .offset(y: offset)
             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -150,32 +145,30 @@ struct MusicLibrarySheet: View {
     private func dragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                // Calculate diagonal drag (left-up direction)
-                let diagonalDistance = -(value.translation.width + value.translation.height) / 2
-                let newOffset = offset - diagonalDistance
+                // 上方向へのドラッグで展開
+                let newOffset = offset + value.translation.height
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
-                // Limit dragging between fully expanded and collapsed
+                // ドラッグ範囲を制限
                 offset = max(minY, min(maxY, newOffset))
             }
             .onEnded { value in
-                // Check if dragged left-up (negative width and negative height)
-                let draggedLeftUp = value.translation.width < -30 || value.translation.height < -30
-
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
 
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    if draggedLeftUp && !isExpanded {
-                        // Expand when dragged left-up
+                    // 上にドラッグした場合
+                    if value.translation.height < -50 {
                         offset = minY
                         isExpanded = true
-                    } else if isExpanded && (value.translation.width > 30 || value.translation.height > 30) {
-                        // Collapse when dragged right-down
+                    }
+                    // 下にドラッグした場合
+                    else if value.translation.height > 50 {
                         offset = maxY
                         isExpanded = false
-                    } else {
-                        // Snap based on current position
+                    }
+                    // 位置に基づいてスナップ
+                    else {
                         let midY = (minY + maxY) / 2
                         if offset < midY {
                             offset = minY
