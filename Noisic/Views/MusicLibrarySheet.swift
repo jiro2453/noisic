@@ -21,36 +21,28 @@ struct MusicLibrarySheet: View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Header/Handle Area
-                HStack {
-                    Spacer()
+                if isExpanded {
+                    HStack {
+                        Spacer()
 
-                    VStack(spacing: 8) {
-                        // Drag Handle
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.white.opacity(0.5))
-                            .frame(width: 40, height: 6)
-                            .padding(.top, 12)
-
-                        if isExpanded {
+                        VStack(spacing: 8) {
                             Text("ライブラリ")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
-                    }
 
-                    Spacer()
-                }
-                .frame(height: isExpanded ? 60 : 100)
-                .frame(maxWidth: .infinity)
-                .overlay(alignment: .center) {
-                    // Collapsed state: show icon in center
-                    if !isExpanded {
-                        Image(systemName: "music.note.list")
-                            .font(.system(size: 26, weight: .medium))
-                            .foregroundColor(.white.opacity(0.7))
+                        Spacer()
                     }
+                    .frame(height: 60)
+                    .frame(maxWidth: .infinity)
+                    .gesture(dragGesture(geometry: geometry))
+                } else {
+                    // Collapsed: Empty handle area
+                    Color.clear
+                        .frame(height: 100)
+                        .frame(maxWidth: .infinity)
+                        .gesture(dragGesture(geometry: geometry))
                 }
-                .gesture(dragGesture(geometry: geometry))
 
                 // Content Area
                 if isExpanded {
@@ -126,12 +118,12 @@ struct MusicLibrarySheet: View {
             }
             .frame(width: sheetWidth, alignment: .trailing)
             .background(
-                // 右下角だけ大きく丸めたシート背景
+                // 角丸シート背景
                 CustomRoundedShape(
                     topLeading: isExpanded ? 20 : 0,
                     topTrailing: isExpanded ? 20 : 0,
                     bottomLeading: 0,
-                    bottomTrailing: isExpanded ? 0 : 60
+                    bottomTrailing: isExpanded ? 0 : 20
                 )
                 .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
                 .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
