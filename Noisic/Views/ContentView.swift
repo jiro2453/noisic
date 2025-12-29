@@ -249,8 +249,8 @@ struct ContentView: View {
                 }
                 // Initialize sheet offset on first appear
                 if sheetOffset == 1000 {
-                    // Position at bottom of screen, showing only the handle (60pt)
-                    sheetOffset = geometry.size.height - 60
+                    // Position at bottom of screen (offset = sheet's bottom edge y-coordinate)
+                    sheetOffset = geometry.size.height
                 }
             }
         }

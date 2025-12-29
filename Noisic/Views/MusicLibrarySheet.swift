@@ -16,35 +16,28 @@ struct MusicLibrarySheet: View {
     let maxHeight: CGFloat
 
     @State private var sheetWidth: CGFloat = 70 // Collapsed時の幅
+    @State private var sheetHeight: CGFloat = 60 // Collapsed時の高さ
 
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
                 // Header/Handle Area
-                if isExpanded {
-                    HStack {
-                        Spacer()
+                HStack {
+                    Spacer()
 
+                    if isExpanded {
                         VStack(spacing: 8) {
                             Text("ライブラリ")
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                         }
-
-                        Spacer()
                     }
-                    .frame(height: 60)
-                    .frame(maxWidth: .infinity)
-                    .gesture(dragGesture(geometry: geometry))
-                } else {
-                    // Collapsed: Empty handle area
-                    Rectangle()
-                        .fill(Color.clear)
-                        .frame(height: 60)
-                        .frame(maxWidth: .infinity)
-                        .contentShape(Rectangle())
-                        .gesture(dragGesture(geometry: geometry))
+
+                    Spacer()
                 }
+                .frame(height: 60)
+                .frame(maxWidth: .infinity)
+                .gesture(dragGesture(geometry: geometry))
 
                 // Content Area
                 if isExpanded {
@@ -118,22 +111,26 @@ struct MusicLibrarySheet: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(width: sheetWidth, alignment: .trailing)
+            .frame(width: sheetWidth, height: sheetHeight, alignment: .top)
             .background(
                 // 角丸シート背景（すべて20ptに統一）
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
                     .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
-            .offset(y: offset)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .position(
+                x: geometry.size.width - sheetWidth / 2,
+                y: offset - sheetHeight / 2
+            )
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     sheetWidth = expanded ? geometry.size.width : 70
+                    sheetHeight = expanded ? maxHeight : 60
                 }
             }
             .onAppear {
                 sheetWidth = isExpanded ? geometry.size.width : 70
+                sheetHeight = isExpanded ? maxHeight : 60
                 // Check library authorization when sheet appears
                 libraryManager.checkAuthorization()
             }
@@ -147,18 +144,19 @@ struct MusicLibrarySheet: View {
                 // 左上方向へのドラッグで展開（斜め）
                 let diagonalDistance = -(value.translation.width + value.translation.height) / 2
                 let newOffset = offset - diagonalDistance
-                let minY = geometry.size.height - maxHeight
-                let maxY = geometry.size.height - minHeight
+                let minY = maxHeight // 展開時：シートの下端 = maxHeight（シート上端が画面上端）
+                let maxY = geometry.size.height // 収縮時：シートの下端 = 画面の高さ
                 // ドラッグ範囲を制限
                 offset = max(minY, min(maxY, newOffset))
 
-                // ドラッグ中に幅を変更
+                // ドラッグ中に幅と高さを変更
                 let dragProgress = max(0, min(1, (maxY - offset) / (maxY - minY)))
                 sheetWidth = 70 + (geometry.size.width - 70) * dragProgress
+                sheetHeight = 60 + (maxHeight - 60) * dragProgress
             }
             .onEnded { value in
-                let minY = geometry.size.height - maxHeight
-                let maxY = geometry.size.height - minHeight
+                let minY = maxHeight // 展開時
+                let maxY = geometry.size.height // 収縮時
 
                 // 左上方向へのドラッグを検出
                 let draggedLeftUp = value.translation.width < -30 || value.translation.height < -30
@@ -169,11 +167,13 @@ struct MusicLibrarySheet: View {
                         offset = minY
                         isExpanded = true
                         sheetWidth = geometry.size.width
+                        sheetHeight = maxHeight
                     } else if isExpanded && (value.translation.width > 30 || value.translation.height > 30) {
                         // 右下にドラッグで収縮
                         offset = maxY
                         isExpanded = false
                         sheetWidth = 70
+                        sheetHeight = 60
                     } else {
                         // 位置に基づいてスナップ
                         let midY = (minY + maxY) / 2
@@ -181,10 +181,12 @@ struct MusicLibrarySheet: View {
                             offset = minY
                             isExpanded = true
                             sheetWidth = geometry.size.width
+                            sheetHeight = maxHeight
                         } else {
                             offset = maxY
                             isExpanded = false
                             sheetWidth = 70
+                            sheetHeight = 60
                         }
                     }
                 }
