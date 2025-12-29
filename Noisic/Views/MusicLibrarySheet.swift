@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct MusicLibrarySheet: View {
-    @EnvironmentObject var libraryManager: LibraryManager
     @State private var isExpanded = false
 
     var body: some View {
@@ -20,12 +19,12 @@ struct MusicLibrarySheet: View {
                     .foregroundColor(.white)
                     .frame(height: 60)
 
-                // Content
+                // Content - 固定テキストのみ
                 ScrollView {
                     VStack(spacing: 16) {
-                        Text("アルバム数: \(libraryManager.allAlbums.count)")
+                        Text("テスト表示")
                             .foregroundColor(.white)
-                        Text("最近追加: \(libraryManager.recentlyAdded.count)")
+                        Text("ライブラリ機能は次のステップで追加")
                             .foregroundColor(.white)
                     }
                     .padding()
@@ -42,10 +41,6 @@ struct MusicLibrarySheet: View {
         .onTapGesture {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 isExpanded.toggle()
-                // 展開時のみ認証チェック
-                if isExpanded {
-                    libraryManager.checkAuthorization()
-                }
             }
         }
     }
