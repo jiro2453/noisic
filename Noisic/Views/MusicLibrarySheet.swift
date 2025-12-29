@@ -134,15 +134,16 @@ struct MusicLibrarySheet: View {
             .onAppear {
                 sheetWidth = isExpanded ? geometry.size.width : 70
                 sheetHeight = isExpanded ? maxHeight : 60
-                // Initialize offset if not set
+                // Initialize offset if not set (シートの下端を画面の下端に配置)
                 if offset < 0 {
+                    // セーフエリアを含む画面全体の高さを使用
                     offset = geometry.size.height
                 }
                 // Check library authorization when sheet appears
                 libraryManager.checkAuthorization()
             }
         }
-        .ignoresSafeArea()
+        .ignoresSafeArea(.all, edges: .all)
     }
 
     private func dragGesture(geometry: GeometryProxy) -> some Gesture {
