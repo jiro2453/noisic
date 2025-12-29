@@ -109,7 +109,7 @@ struct ContentView: View {
     @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
 
     // Music Library Sheet
-    @State private var sheetOffset: CGFloat = 1000 // Will be set in onAppear
+    @State private var sheetOffset: CGFloat = -1 // Will be set in onAppear or by MusicLibrarySheet
     @State private var isLibraryExpanded = false
 
     // Triple the ambient sounds for infinite scrolling effect
@@ -248,7 +248,7 @@ struct ContentView: View {
                     audioManager.play(sound: .bonfire)
                 }
                 // Initialize sheet offset on first appear
-                if sheetOffset == 1000 {
+                if sheetOffset < 0 {
                     // Position at bottom of screen (offset = sheet's bottom edge y-coordinate)
                     sheetOffset = geometry.size.height
                 }
