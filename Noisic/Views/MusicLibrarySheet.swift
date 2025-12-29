@@ -12,10 +12,10 @@ struct MusicLibrarySheet: View {
     @Binding var offset: CGFloat
     @Binding var isExpanded: Bool
 
-    let minHeight: CGFloat = 100 // Handle only (circular peek)
+    let minHeight: CGFloat = 60 // Handle only (circular peek)
     let maxHeight: CGFloat
 
-    @State private var sheetWidth: CGFloat = 120 // Collapsed時の幅
+    @State private var sheetWidth: CGFloat = 70 // Collapsed時の幅
 
     var body: some View {
         GeometryReader { geometry in
@@ -40,7 +40,7 @@ struct MusicLibrarySheet: View {
                     // Collapsed: Empty handle area
                     Rectangle()
                         .fill(Color.clear)
-                        .frame(height: 100)
+                        .frame(height: 60)
                         .frame(maxWidth: .infinity)
                         .contentShape(Rectangle())
                         .gesture(dragGesture(geometry: geometry))
@@ -129,11 +129,11 @@ struct MusicLibrarySheet: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    sheetWidth = expanded ? geometry.size.width : 120
+                    sheetWidth = expanded ? geometry.size.width : 70
                 }
             }
             .onAppear {
-                sheetWidth = isExpanded ? geometry.size.width : 120
+                sheetWidth = isExpanded ? geometry.size.width : 70
             }
         }
         .ignoresSafeArea()
@@ -152,7 +152,7 @@ struct MusicLibrarySheet: View {
 
                 // ドラッグ中に幅を変更
                 let dragProgress = max(0, min(1, (maxY - offset) / (maxY - minY)))
-                sheetWidth = 120 + (geometry.size.width - 120) * dragProgress
+                sheetWidth = 70 + (geometry.size.width - 70) * dragProgress
             }
             .onEnded { value in
                 let minY = geometry.size.height - maxHeight
@@ -171,7 +171,7 @@ struct MusicLibrarySheet: View {
                         // 右下にドラッグで収縮
                         offset = maxY
                         isExpanded = false
-                        sheetWidth = 120
+                        sheetWidth = 70
                     } else {
                         // 位置に基づいてスナップ
                         let midY = (minY + maxY) / 2
@@ -182,7 +182,7 @@ struct MusicLibrarySheet: View {
                         } else {
                             offset = maxY
                             isExpanded = false
-                            sheetWidth = 120
+                            sheetWidth = 70
                         }
                     }
                 }
