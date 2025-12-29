@@ -127,11 +127,11 @@ struct MusicLibrarySheet: View {
             .frame(maxWidth: .infinity, alignment: .trailing)
             .background(
                 // 右下角だけ大きく丸めたシート背景
-                UnevenRoundedRectangle(
-                    topLeadingRadius: isExpanded ? 20 : 0,
-                    bottomLeadingRadius: 0,
-                    bottomTrailingRadius: isExpanded ? 0 : 60,
-                    topTrailingRadius: isExpanded ? 20 : 0
+                CustomRoundedShape(
+                    topLeading: isExpanded ? 20 : 0,
+                    topTrailing: isExpanded ? 20 : 0,
+                    bottomLeading: 0,
+                    bottomTrailing: isExpanded ? 0 : 60
                 )
                 .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
                 .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
@@ -203,5 +203,81 @@ struct AlbumThumbnail: View {
                         .foregroundColor(.white.opacity(0.5))
                 )
         }
+    }
+}
+
+// カスタム角丸シェイプ（各角の半径を個別に指定可能）
+struct CustomRoundedShape: Shape {
+    var topLeading: CGFloat
+    var topTrailing: CGFloat
+    var bottomLeading: CGFloat
+    var bottomTrailing: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        let width = rect.width
+        let height = rect.height
+
+        // 右下から開始（時計回り）
+        path.move(to: CGPoint(x: width, y: height - bottomTrailing))
+
+        // 右下の角
+        if bottomTrailing > 0 {
+            path.addArc(
+                center: CGPoint(x: width - bottomTrailing, y: height - bottomTrailing),
+                radius: bottomTrailing,
+                startAngle: Angle(degrees: 0),
+                endAngle: Angle(degrees: 90),
+                clockwise: false
+            )
+        }
+
+        // 下辺
+        path.addLine(to: CGPoint(x: bottomLeading, y: height))
+
+        // 左下の角
+        if bottomLeading > 0 {
+            path.addArc(
+                center: CGPoint(x: bottomLeading, y: height - bottomLeading),
+                radius: bottomLeading,
+                startAngle: Angle(degrees: 90),
+                endAngle: Angle(degrees: 180),
+                clockwise: false
+            )
+        }
+
+        // 左辺
+        path.addLine(to: CGPoint(x: 0, y: topLeading))
+
+        // 左上の角
+        if topLeading > 0 {
+            path.addArc(
+                center: CGPoint(x: topLeading, y: topLeading),
+                radius: topLeading,
+                startAngle: Angle(degrees: 180),
+                endAngle: Angle(degrees: 270),
+                clockwise: false
+            )
+        }
+
+        // 上辺
+        path.addLine(to: CGPoint(x: width - topTrailing, y: 0))
+
+        // 右上の角
+        if topTrailing > 0 {
+            path.addArc(
+                center: CGPoint(x: width - topTrailing, y: topTrailing),
+                radius: topTrailing,
+                startAngle: Angle(degrees: 270),
+                endAngle: Angle(degrees: 0),
+                clockwise: false
+            )
+        }
+
+        // 右辺
+        path.addLine(to: CGPoint(x: width, y: height - bottomTrailing))
+
+        return path
     }
 }
