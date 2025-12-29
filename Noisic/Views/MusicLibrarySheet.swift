@@ -31,10 +31,8 @@ struct MusicLibrarySheet: View {
     }
 }
 
-// 別のViewに分離することで、展開時のみLibraryManagerにアクセス
+// LibraryContentView - まずは固定テキストのみ
 struct LibraryContentView: View {
-    @EnvironmentObject var libraryManager: LibraryManager
-
     var body: some View {
         VStack(spacing: 0) {
             // Header
@@ -43,19 +41,16 @@ struct LibraryContentView: View {
                 .foregroundColor(.white)
                 .frame(height: 60)
 
-            // Content
+            // Content - 固定テキストのみ
             ScrollView {
                 VStack(spacing: 16) {
-                    Text("アルバム数: \(libraryManager.allAlbums.count)")
+                    Text("テスト表示")
                         .foregroundColor(.white)
-                    Text("最近追加: \(libraryManager.recentlyAdded.count)")
+                    Text("問題なく再起動できるか確認中")
                         .foregroundColor(.white)
                 }
                 .padding()
             }
-        }
-        .onAppear {
-            libraryManager.checkAuthorization()
         }
     }
 }
