@@ -15,6 +15,8 @@ struct MusicLibrarySheet: View {
     let minHeight: CGFloat = 100 // Handle only (circular peek)
     let maxHeight: CGFloat
 
+    @State private var sheetWidth: CGFloat = 120 // Collapsed時の幅
+
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
@@ -40,14 +42,12 @@ struct MusicLibrarySheet: View {
                 }
                 .frame(height: isExpanded ? 60 : 100)
                 .frame(maxWidth: .infinity)
-                .overlay(alignment: .bottomTrailing) {
-                    // Collapsed state: show icon in bottom-right
+                .overlay(alignment: .center) {
+                    // Collapsed state: show icon in center
                     if !isExpanded {
                         Image(systemName: "music.note.list")
                             .font(.system(size: 26, weight: .medium))
                             .foregroundColor(.white.opacity(0.7))
-                            .padding(.trailing, 35)
-                            .padding(.bottom, 35)
                     }
                 }
                 .gesture(dragGesture(geometry: geometry))
@@ -124,7 +124,7 @@ struct MusicLibrarySheet: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            .frame(width: sheetWidth, alignment: .trailing)
             .background(
                 // 右下角だけ大きく丸めたシート背景
                 CustomRoundedShape(
@@ -138,6 +138,14 @@ struct MusicLibrarySheet: View {
             )
             .offset(y: offset)
             .frame(maxWidth: .infinity, alignment: .trailing)
+            .onChange(of: isExpanded) { expanded in
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    sheetWidth = expanded ? geometry.size.width : 120
+                }
+            }
+            .onAppear {
+                sheetWidth = isExpanded ? geometry.size.width : 120
+            }
         }
         .ignoresSafeArea()
     }
@@ -145,37 +153,47 @@ struct MusicLibrarySheet: View {
     private func dragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .onChanged { value in
-                // 上方向へのドラッグで展開
-                let newOffset = offset + value.translation.height
+                // 左上方向へのドラッグで展開（斜め）
+                let diagonalDistance = -(value.translation.width + value.translation.height) / 2
+                let newOffset = offset - diagonalDistance
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
                 // ドラッグ範囲を制限
                 offset = max(minY, min(maxY, newOffset))
+
+                // ドラッグ中に幅を変更
+                let dragProgress = max(0, min(1, (maxY - offset) / (maxY - minY)))
+                sheetWidth = 120 + (geometry.size.width - 120) * dragProgress
             }
             .onEnded { value in
                 let minY = geometry.size.height - maxHeight
                 let maxY = geometry.size.height - minHeight
 
+                // 左上方向へのドラッグを検出
+                let draggedLeftUp = value.translation.width < -30 || value.translation.height < -30
+
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                    // 上にドラッグした場合
-                    if value.translation.height < -50 {
+                    if draggedLeftUp && !isExpanded {
+                        // 左上にドラッグで展開
                         offset = minY
                         isExpanded = true
-                    }
-                    // 下にドラッグした場合
-                    else if value.translation.height > 50 {
+                        sheetWidth = geometry.size.width
+                    } else if isExpanded && (value.translation.width > 30 || value.translation.height > 30) {
+                        // 右下にドラッグで収縮
                         offset = maxY
                         isExpanded = false
-                    }
-                    // 位置に基づいてスナップ
-                    else {
+                        sheetWidth = 120
+                    } else {
+                        // 位置に基づいてスナップ
                         let midY = (minY + maxY) / 2
                         if offset < midY {
                             offset = minY
                             isExpanded = true
+                            sheetWidth = geometry.size.width
                         } else {
                             offset = maxY
                             isExpanded = false
+                            sheetWidth = 120
                         }
                     }
                 }
