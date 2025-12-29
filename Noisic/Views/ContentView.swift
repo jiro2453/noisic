@@ -105,7 +105,12 @@ struct CustomSliderDouble: View {
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
+    // @EnvironmentObject var libraryManager: LibraryManager // 一時的に無効化
     @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
+
+    // Music Library Sheet - 一時的に無効化
+    // @State private var sheetOffset: CGFloat = UIScreen.main.bounds.height // 画面の高さで初期化
+    // @State private var isLibraryExpanded = false
 
     // Triple the ambient sounds for infinite scrolling effect
     private var extendedSounds: [AmbientSound] {
@@ -229,15 +234,23 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
 
-            // Music Library Sheet - 完全にコメントアウトしてテスト
-            // MusicLibrarySheet()
-            //     .zIndex(100)
+            // Music Library Sheet - 一時的にコメントアウト
+            /*
+            MusicLibrarySheet(
+                offset: $sheetOffset,
+                isExpanded: $isLibraryExpanded,
+                maxHeight: geometry.size.height * 0.7
+            )
+            .zIndex(100)
+            */
             }
             .onAppear {
                 // Auto-play bonfire on launch
                 if !audioManager.isPlaying {
                     audioManager.play(sound: .bonfire)
                 }
+                // Update sheet offset to actual screen height (including safe area) - 一時的に無効化
+                // sheetOffset = geometry.size.height
             }
         }
     }
