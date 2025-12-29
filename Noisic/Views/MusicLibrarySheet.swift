@@ -39,6 +39,7 @@ struct MusicLibrarySheet: View {
                 }
                 .frame(height: 60)
                 .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
                 .gesture(dragGesture(geometry: geometry))
 
                 // Content Area
@@ -113,15 +114,17 @@ struct MusicLibrarySheet: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .frame(width: sheetWidth, height: sheetHeight, alignment: .top)
             .background(
                 // 角丸シート背景（すべて20ptに統一）
                 RoundedRectangle(cornerRadius: 20)
                     .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
                     .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .offset(x: 0, y: safeOffset - geometry.size.height)
+            .frame(width: sheetWidth, height: sheetHeight)
+            .position(
+                x: geometry.size.width - sheetWidth / 2,
+                y: safeOffset - sheetHeight / 2
+            )
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     sheetWidth = expanded ? geometry.size.width : 70
