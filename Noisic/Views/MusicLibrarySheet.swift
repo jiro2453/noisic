@@ -118,10 +118,8 @@ struct MusicLibrarySheet: View {
                     .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
                     .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
-            .position(
-                x: geometry.size.width - sheetWidth / 2,
-                y: offset - sheetHeight / 2
-            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+            .offset(x: 0, y: offset - geometry.size.height)
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     sheetWidth = expanded ? geometry.size.width : 70
