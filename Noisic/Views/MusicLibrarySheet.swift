@@ -42,11 +42,11 @@ struct MusicLibrarySheet: View {
         .onTapGesture {
             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                 isExpanded.toggle()
+                // 展開時のみ認証チェック
+                if isExpanded {
+                    libraryManager.checkAuthorization()
+                }
             }
-        }
-        .onAppear {
-            // アプリ起動時に一度だけ認証チェック
-            libraryManager.checkAuthorization()
         }
     }
 }
