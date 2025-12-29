@@ -11,7 +11,6 @@ import SwiftUI
 struct NoisicApp: App {
     @StateObject private var audioManager = AudioManager()
     @StateObject private var musicInfoReader = MusicInfoReader()
-    @StateObject private var libraryManager = LibraryManager()
 
     init() {
         // Configure audio session for ambient sound playback with other apps
@@ -23,7 +22,6 @@ struct NoisicApp: App {
             ContentView()
                 .environmentObject(audioManager)
                 .environmentObject(musicInfoReader)
-                .environmentObject(libraryManager)
         }
     }
 }

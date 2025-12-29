@@ -105,11 +105,7 @@ struct CustomSliderDouble: View {
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
-    @EnvironmentObject var libraryManager: LibraryManager
     @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
-
-    // Music Library Sheet
-    @State private var isLibraryExpanded = false
 
     // Triple the ambient sounds for infinite scrolling effect
     private var extendedSounds: [AmbientSound] {
