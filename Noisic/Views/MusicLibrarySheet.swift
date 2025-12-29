@@ -38,9 +38,11 @@ struct MusicLibrarySheet: View {
                     .gesture(dragGesture(geometry: geometry))
                 } else {
                     // Collapsed: Empty handle area
-                    Color.clear
+                    Rectangle()
+                        .fill(Color.clear)
                         .frame(height: 100)
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                         .gesture(dragGesture(geometry: geometry))
                 }
 
@@ -118,15 +120,10 @@ struct MusicLibrarySheet: View {
             }
             .frame(width: sheetWidth, alignment: .trailing)
             .background(
-                // 角丸シート背景
-                CustomRoundedShape(
-                    topLeading: isExpanded ? 20 : 0,
-                    topTrailing: isExpanded ? 20 : 0,
-                    bottomLeading: 0,
-                    bottomTrailing: isExpanded ? 0 : 20
-                )
-                .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
-                .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
+                // 角丸シート背景（すべて20ptに統一）
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.gray.opacity(isExpanded ? 0.85 : 0.3))
+                    .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
             .offset(y: offset)
             .frame(maxWidth: .infinity, alignment: .trailing)
