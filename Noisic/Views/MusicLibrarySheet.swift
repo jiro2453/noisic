@@ -120,7 +120,7 @@ struct MusicLibrarySheet: View {
             )
             .frame(width: sheetWidth, height: sheetHeight)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .offset(y: offset == 0 ? 0 : (offset - geometry.size.height))
+            .offset(y: offset - geometry.size.height)
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     sheetWidth = expanded ? geometry.size.width : 70
@@ -130,11 +130,6 @@ struct MusicLibrarySheet: View {
             .onAppear {
                 sheetWidth = isExpanded ? geometry.size.width : 70
                 sheetHeight = isExpanded ? maxHeight : 60
-                // Initialize offset if not set (シートの下端を画面の下端に配置)
-                if offset == 0 {
-                    // セーフエリアを含む画面全体の高さを使用
-                    offset = geometry.size.height
-                }
                 // Check library authorization when sheet appears
                 libraryManager.checkAuthorization()
             }

@@ -109,7 +109,7 @@ struct ContentView: View {
     @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
 
     // Music Library Sheet
-    @State private var sheetOffset: CGFloat = 0 // Will be initialized in MusicLibrarySheet.onAppear
+    @State private var sheetOffset: CGFloat = UIScreen.main.bounds.height // 画面の高さで初期化
     @State private var isLibraryExpanded = false
 
     // Triple the ambient sounds for infinite scrolling effect
@@ -247,11 +247,8 @@ struct ContentView: View {
                 if !audioManager.isPlaying {
                     audioManager.play(sound: .bonfire)
                 }
-                // Initialize sheet offset on first appear
-                if sheetOffset == 0 {
-                    // Position at bottom of screen (offset = sheet's bottom edge y-coordinate)
-                    sheetOffset = geometry.size.height
-                }
+                // Update sheet offset to actual screen height (including safe area)
+                sheetOffset = geometry.size.height
             }
         }
     }
