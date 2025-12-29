@@ -11,7 +11,7 @@ import SwiftUI
 struct NoisicApp: App {
     @StateObject private var audioManager = AudioManager()
     @StateObject private var musicInfoReader = MusicInfoReader()
-    @StateObject private var libraryManager = LibraryManager()
+    // @StateObject private var libraryManager = LibraryManager() // 一時的に無効化
 
     init() {
         // Configure audio session for ambient sound playback with other apps
@@ -23,7 +23,7 @@ struct NoisicApp: App {
             ContentView()
                 .environmentObject(audioManager)
                 .environmentObject(musicInfoReader)
-                .environmentObject(libraryManager)
+                // .environmentObject(libraryManager) // 一時的に無効化
         }
     }
 }
