@@ -20,6 +20,8 @@ struct MusicLibrarySheet: View {
 
     var body: some View {
         GeometryReader { geometry in
+            let safeOffset = offset > 900 ? geometry.size.height : offset
+
             VStack(spacing: 0) {
                 // Header/Handle Area
                 HStack {
@@ -119,7 +121,7 @@ struct MusicLibrarySheet: View {
                     .shadow(color: .black.opacity(isExpanded ? 0.5 : 0.2), radius: 20, y: -5)
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            .offset(x: 0, y: offset - geometry.size.height)
+            .offset(x: 0, y: safeOffset - geometry.size.height)
             .onChange(of: isExpanded) { expanded in
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     sheetWidth = expanded ? geometry.size.width : 70
@@ -129,6 +131,10 @@ struct MusicLibrarySheet: View {
             .onAppear {
                 sheetWidth = isExpanded ? geometry.size.width : 70
                 sheetHeight = isExpanded ? maxHeight : 60
+                // Initialize offset if not set
+                if offset > 900 {
+                    offset = geometry.size.height
+                }
                 // Check library authorization when sheet appears
                 libraryManager.checkAuthorization()
             }
