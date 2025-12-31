@@ -61,8 +61,15 @@ struct ContentView: View {
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.5))
                     .padding(.top, 20)
+
+                // デバッグ: 再生状態を表示
+                Text(audioManager.isPlaying ? "🔊 再生中" : "🔇 停止中")
+                    .font(.system(size: 12))
+                    .foregroundColor(.white.opacity(0.7))
             }
+            .allowsHitTesting(false) // ジェスチャーをブロックしないように
         }
+        .contentShape(Rectangle()) // 画面全体でジェスチャーを受け取る
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -90,15 +97,16 @@ struct ContentView: View {
         )
         .onAppear {
             // Auto-play bonfire on launch
-            if !audioManager.isPlaying {
-                audioManager.play(sound: .bonfire)
-            }
+            print("📱 ContentView appeared, isPlaying: \(audioManager.isPlaying)")
+            audioManager.play(sound: .bonfire)
+            print("📱 Bonfire play called")
         }
     }
 
     private func handleIndexChange() {
         // Auto-play ambient sound when swiping
         let sound = extendedSounds[currentIndex]
+        print("🎵 Switching to: \(sound.rawValue)")
         audioManager.play(sound: sound)
 
         // Handle infinite loop by jumping to middle set
