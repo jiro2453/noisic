@@ -25,7 +25,7 @@ struct ContentView: View {
             // ビデオ背景
             VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
                 .ignoresSafeArea()
-                .id(actualIndex) // actualIndexが変わったらビデオを再作成
+                .id(actualIndex)
 
             // グラデーションオーバーレイ
             LinearGradient(
@@ -40,29 +40,26 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
+            // テキスト表示レイヤー（ジェスチャーをブロックしない）
             VStack(spacing: 20) {
                 Text("Noisic")
                     .font(.system(size: 40, weight: .bold))
                     .foregroundColor(.white)
 
-                // 現在の環境音を表示
                 Text(AmbientSound.allCases[actualIndex].rawValue)
                     .font(.system(size: 20))
                     .foregroundColor(.white.opacity(0.8))
 
-                // アイコン表示
                 Image(systemName: AmbientSound.allCases[actualIndex].icon)
                     .font(.system(size: 50))
                     .foregroundColor(.white)
                     .opacity(0.6)
 
-                // スワイプ指示
                 Text("← スワイプして切り替え →")
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.5))
                     .padding(.top, 20)
 
-                // デバッグ情報
                 VStack(spacing: 4) {
                     Text(audioManager.isPlaying ? "🔊 再生中" : "🔇 停止中")
                         .font(.system(size: 12))
@@ -77,7 +74,14 @@ struct ContentView: View {
                         .foregroundColor(.white.opacity(0.7))
                 }
 
-                // デバッグ用ボタン
+                Spacer()
+                    .frame(height: 60) // ボタン用のスペース
+            }
+            .allowsHitTesting(false) // ジェスチャーをブロックしない
+
+            // ボタンレイヤー（別のZStackレイヤー）
+            VStack {
+                Spacer()
                 HStack(spacing: 20) {
                     Button("◀︎") {
                         print("🔘 Button tapped: Previous")
@@ -105,9 +109,9 @@ struct ContentView: View {
                     .background(Color.white.opacity(0.2))
                     .cornerRadius(10)
                 }
-                .padding(.top, 10)
+                .padding(.bottom, 20)
             }
-            .allowsHitTesting(true) // ボタンを押せるようにする
+            // このレイヤーだけがボタンのタップを受け付ける
         }
         .contentShape(Rectangle())
         .gesture(
@@ -124,20 +128,16 @@ struct ContentView: View {
                     print("✋ Drag ended: \(value.translation.width)")
 
                     if value.translation.width > threshold {
-                        // 右スワイプ（前へ）
                         print("➡️ Swipe right detected")
                         DispatchQueue.main.async {
-                            let newIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
-                            currentIndex = newIndex
+                            currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
                             print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
                             handleIndexChange()
                         }
                     } else if value.translation.width < -threshold {
-                        // 左スワイプ（次へ）
                         print("⬅️ Swipe left detected")
                         DispatchQueue.main.async {
-                            let newIndex = (currentIndex + 1) % extendedSounds.count
-                            currentIndex = newIndex
+                            currentIndex = (currentIndex + 1) % extendedSounds.count
                             print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
                             handleIndexChange()
                         }
@@ -151,7 +151,6 @@ struct ContentView: View {
         .onAppear {
             print("📱 ContentView appeared")
             print("📊 Initial index: \(currentIndex), actualIndex: \(actualIndex)")
-            print("📊 AudioManager isPlaying: \(audioManager.isPlaying)")
             audioManager.play(sound: .bonfire)
             print("📱 Bonfire play called")
         }
@@ -161,9 +160,7 @@ struct ContentView: View {
         let sound = extendedSounds[currentIndex]
         print("🎵 Switching to: \(sound.rawValue), currentIndex: \(currentIndex), actualIndex: \(actualIndex)")
         audioManager.play(sound: sound)
-        print("🔊 audioManager.play() called for \(sound.rawValue)")
 
-        // Handle infinite loop by jumping to middle set
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {
             DispatchQueue.main.async {
