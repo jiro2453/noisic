@@ -7,56 +7,9 @@
 
 import SwiftUI
 
-// Custom Slider with full-width track (Float version)
-struct CustomSlider: View {
-    @Binding var value: Float
-    let range: ClosedRange<Float>
-    let trackHeight: CGFloat = 4
-    let thumbSize: CGFloat = 20
-
-    var body: some View {
-        GeometryReader { geometry in
-            let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
-            let thumbOffset = percentage * geometry.size.width
-
-            ZStack(alignment: .leading) {
-                // Background track
-                Rectangle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(height: trackHeight)
-                    .cornerRadius(trackHeight / 2)
-
-                // Active track (from left edge to thumb center)
-                Rectangle()
-                    .fill(Color.white)
-                    .frame(width: thumbOffset, height: trackHeight)
-                    .cornerRadius(trackHeight / 2)
-
-                // Thumb
-                Circle()
-                    .fill(Color.gray)
-                    .frame(width: thumbSize, height: thumbSize)
-                    .offset(x: thumbOffset - thumbSize / 2)
-            }
-            .frame(maxHeight: .infinity)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { gesture in
-                        let newPercentage = max(0, min(1, gesture.location.x / geometry.size.width))
-                        let newValue = Float(newPercentage) * (range.upperBound - range.lowerBound) + range.lowerBound
-                        value = newValue
-                    }
-            )
-        }
-        .frame(height: 44)
-    }
-}
-
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @State private var currentIndex = 11
-    @State private var dragOffset: CGFloat = 0
 
     private var extendedSounds: [AmbientSound] {
         AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
@@ -88,7 +41,6 @@ struct ContentView: View {
 
             // UIレイヤー
             VStack(spacing: 0) {
-                // Ambient Sound Icon with Navigation Arrows at Top
                 VStack(spacing: 12) {
                     // Icon with Arrows
                     HStack(spacing: 20) {
@@ -109,48 +61,17 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-                    .allowsHitTesting(false)
-
-                    // Volume Control
-                    HStack(spacing: 12) {
-                        Image(systemName: "speaker.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-                            .allowsHitTesting(false)
-
-                        CustomSlider(
-                            value: Binding(
-                                get: { audioManager.volume },
-                                set: { audioManager.setVolume($0) }
-                            ),
-                            range: 1...4
-                        )
-                        .frame(width: 180)
-
-                        Image(systemName: "speaker.wave.3.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-                            .allowsHitTesting(false)
-                    }
-                    .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
 
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false) // スワイプを妨げない
+            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 20)
-                .onChanged { value in
-                    DispatchQueue.main.async {
-                        dragOffset = value.translation.width
-                    }
-                }
                 .onEnded { value in
                     let threshold: CGFloat = 30
 
@@ -164,10 +85,6 @@ struct ContentView: View {
                             currentIndex = (currentIndex + 1) % extendedSounds.count
                             handleIndexChange()
                         }
-                    }
-
-                    DispatchQueue.main.async {
-                        dragOffset = 0
                     }
                 }
         )
