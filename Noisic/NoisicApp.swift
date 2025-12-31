@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct NoisicApp: App {
     @StateObject private var audioManager = AudioManager()
-    @StateObject private var musicInfoReader = MusicInfoReader()
+    // @StateObject private var musicInfoReader = MusicInfoReader() // 一時的に無効化
     // @StateObject private var libraryManager = LibraryManager() // 一時的に無効化
 
     init() {
@@ -22,7 +22,7 @@ struct NoisicApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(audioManager)
-                .environmentObject(musicInfoReader)
+                // .environmentObject(musicInfoReader) // 一時的に無効化
                 // .environmentObject(libraryManager) // 一時的に無効化
         }
     }

@@ -104,7 +104,7 @@ struct CustomSliderDouble: View {
 
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
-    @EnvironmentObject var musicInfoReader: MusicInfoReader
+    // @EnvironmentObject var musicInfoReader: MusicInfoReader // 一時的に無効化
     // @EnvironmentObject var libraryManager: LibraryManager // 一時的に無効化
     @State private var currentIndex = 11 // Start from bonfire in middle of tripled array (6+5)
 
@@ -224,10 +224,12 @@ struct ContentView: View {
                     .allowsHitTesting(false)
                     .frame(maxHeight: 30)
 
-                // Music Player Section (Upper Center)
+                // Music Player Section (Upper Center) - 一時的に無効化
+                /*
                 MusicPlayerView(musicInfo: musicInfoReader.musicInfo)
                     .environmentObject(audioManager)
                     .environmentObject(musicInfoReader)
+                */
 
                 Spacer()
                     .allowsHitTesting(false)
