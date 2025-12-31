@@ -76,14 +76,46 @@ struct ContentView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.7))
                 }
+
+                // デバッグ用ボタン
+                HStack(spacing: 20) {
+                    Button("◀︎") {
+                        print("🔘 Button tapped: Previous")
+                        DispatchQueue.main.async {
+                            currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
+                            print("📊 Button changed to: \(currentIndex)")
+                            handleIndexChange()
+                        }
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(10)
+
+                    Button("▶︎") {
+                        print("🔘 Button tapped: Next")
+                        DispatchQueue.main.async {
+                            currentIndex = (currentIndex + 1) % extendedSounds.count
+                            print("📊 Button changed to: \(currentIndex)")
+                            handleIndexChange()
+                        }
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(10)
+                }
+                .padding(.top, 10)
             }
-            .allowsHitTesting(false)
+            .allowsHitTesting(true) // ボタンを押せるようにする
         }
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 20)
                 .onChanged { value in
-                    dragOffset = value.translation.width
+                    DispatchQueue.main.async {
+                        dragOffset = value.translation.width
+                    }
                     print("👆 Dragging: \(dragOffset)")
                 }
                 .onEnded { value in
@@ -94,20 +126,26 @@ struct ContentView: View {
                     if value.translation.width > threshold {
                         // 右スワイプ（前へ）
                         print("➡️ Swipe right detected")
-                        let newIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
-                        currentIndex = newIndex
-                        print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
-                        handleIndexChange()
+                        DispatchQueue.main.async {
+                            let newIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
+                            currentIndex = newIndex
+                            print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
+                            handleIndexChange()
+                        }
                     } else if value.translation.width < -threshold {
                         // 左スワイプ（次へ）
                         print("⬅️ Swipe left detected")
-                        let newIndex = (currentIndex + 1) % extendedSounds.count
-                        currentIndex = newIndex
-                        print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
-                        handleIndexChange()
+                        DispatchQueue.main.async {
+                            let newIndex = (currentIndex + 1) % extendedSounds.count
+                            currentIndex = newIndex
+                            print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
+                            handleIndexChange()
+                        }
                     }
 
-                    dragOffset = 0
+                    DispatchQueue.main.async {
+                        dragOffset = 0
+                    }
                 }
         )
         .onAppear {
@@ -128,11 +166,15 @@ struct ContentView: View {
         // Handle infinite loop by jumping to middle set
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {
-            currentIndex = currentIndex + count
-            print("🔄 Jump to middle from start: \(currentIndex)")
+            DispatchQueue.main.async {
+                currentIndex = currentIndex + count
+                print("🔄 Jump to middle from start: \(currentIndex)")
+            }
         } else if currentIndex >= (count * 3) - 2 {
-            currentIndex = currentIndex - count
-            print("🔄 Jump to middle from end: \(currentIndex)")
+            DispatchQueue.main.async {
+                currentIndex = currentIndex - count
+                print("🔄 Jump to middle from end: \(currentIndex)")
+            }
         }
     }
 }
