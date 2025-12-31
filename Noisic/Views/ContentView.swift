@@ -61,6 +61,30 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
+
+                    // Volume Control (標準Sliderを使用)
+                    HStack(spacing: 12) {
+                        Image(systemName: "speaker.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                            .opacity(0.5)
+
+                        Slider(
+                            value: Binding(
+                                get: { audioManager.volume },
+                                set: { audioManager.setVolume($0) }
+                            ),
+                            in: 1...4
+                        )
+                        .frame(width: 180)
+                        .accentColor(.white)
+
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                            .opacity(0.5)
+                    }
+                    .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
 
