@@ -21,8 +21,22 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // シンプルな背景色のみ（VideoPlayerViewは使わない）
-            Color.black.ignoresSafeArea()
+            // 単一のビデオ背景のみ（TabViewなし）
+            VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
+                .ignoresSafeArea()
+
+            // グラデーションオーバーレイ
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color.black.opacity(0.6),
+                    Color.black.opacity(0.3),
+                    Color.black.opacity(0.6)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
 
             VStack(spacing: 20) {
                 Text("Noisic")
