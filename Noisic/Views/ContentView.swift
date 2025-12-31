@@ -40,8 +40,9 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            // UIレイヤー
+            // Foreground Content
             VStack(spacing: 0) {
+                // Ambient Sound Icon with Navigation Arrows at Top
                 VStack(spacing: 12) {
                     // Icon with Arrows
                     HStack(spacing: 20) {
@@ -62,21 +63,22 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
+                    .allowsHitTesting(false)
                 }
                 .padding(.top, 50)
 
                 Spacer()
+                    .allowsHitTesting(false)
+                    .frame(maxHeight: 30)
+
+                // Music Player Section (Upper Center)
+                MusicPlayerView()
+                    .environmentObject(musicInfoReader)
+
+                Spacer()
+                    .allowsHitTesting(false)
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false)
-
-            // Music Player
-            VStack {
-                Spacer()
-                MusicPlayerView()
-                    .padding(.bottom, 60)
-            }
-            .allowsHitTesting(true)
         }
         .contentShape(Rectangle())
         .gesture(
