@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var musicInfoReader: MusicInfoReader
     @State private var currentIndex = 11
 
     private var extendedSounds: [AmbientSound] {
@@ -68,6 +69,14 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
             .allowsHitTesting(false)
+
+            // Music Player
+            VStack {
+                Spacer()
+                MusicPlayerView()
+                    .padding(.bottom, 60)
+            }
+            .allowsHitTesting(true)
         }
         .contentShape(Rectangle())
         .gesture(
