@@ -25,6 +25,7 @@ struct ContentView: View {
             // ビデオ背景
             VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
                 .ignoresSafeArea()
+                .id(actualIndex) // actualIndexが変わったらビデオを再作成
 
             // グラデーションオーバーレイ
             LinearGradient(
@@ -67,7 +68,7 @@ struct ContentView: View {
                         .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.7))
 
-                    Text("Index: \(currentIndex)")
+                    Text("Index: \(currentIndex) / Actual: \(actualIndex)")
                         .font(.system(size: 12))
                         .foregroundColor(.white.opacity(0.7))
 
@@ -86,19 +87,23 @@ struct ContentView: View {
                     print("👆 Dragging: \(dragOffset)")
                 }
                 .onEnded { value in
-                    let threshold: CGFloat = 30 // 閾値を下げた
+                    let threshold: CGFloat = 30
 
                     print("✋ Drag ended: \(value.translation.width)")
 
                     if value.translation.width > threshold {
                         // 右スワイプ（前へ）
                         print("➡️ Swipe right detected")
-                        currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
+                        let newIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
+                        currentIndex = newIndex
+                        print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
                         handleIndexChange()
                     } else if value.translation.width < -threshold {
                         // 左スワイプ（次へ）
                         print("⬅️ Swipe left detected")
-                        currentIndex = (currentIndex + 1) % extendedSounds.count
+                        let newIndex = (currentIndex + 1) % extendedSounds.count
+                        currentIndex = newIndex
+                        print("📊 New index: \(currentIndex), actualIndex: \(actualIndex)")
                         handleIndexChange()
                     }
 
@@ -106,7 +111,9 @@ struct ContentView: View {
                 }
         )
         .onAppear {
-            print("📱 ContentView appeared, isPlaying: \(audioManager.isPlaying)")
+            print("📱 ContentView appeared")
+            print("📊 Initial index: \(currentIndex), actualIndex: \(actualIndex)")
+            print("📊 AudioManager isPlaying: \(audioManager.isPlaying)")
             audioManager.play(sound: .bonfire)
             print("📱 Bonfire play called")
         }
@@ -114,21 +121,18 @@ struct ContentView: View {
 
     private func handleIndexChange() {
         let sound = extendedSounds[currentIndex]
-        print("🎵 Switching to: \(sound.rawValue), index: \(currentIndex)")
+        print("🎵 Switching to: \(sound.rawValue), currentIndex: \(currentIndex), actualIndex: \(actualIndex)")
         audioManager.play(sound: sound)
+        print("🔊 audioManager.play() called for \(sound.rawValue)")
 
         // Handle infinite loop by jumping to middle set
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {
-            DispatchQueue.main.async {
-                currentIndex = currentIndex + count
-                print("🔄 Jump to middle from start: \(currentIndex)")
-            }
+            currentIndex = currentIndex + count
+            print("🔄 Jump to middle from start: \(currentIndex)")
         } else if currentIndex >= (count * 3) - 2 {
-            DispatchQueue.main.async {
-                currentIndex = currentIndex - count
-                print("🔄 Jump to middle from end: \(currentIndex)")
-            }
+            currentIndex = currentIndex - count
+            print("🔄 Jump to middle from end: \(currentIndex)")
         }
     }
 }
