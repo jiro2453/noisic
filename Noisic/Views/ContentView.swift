@@ -39,7 +39,7 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            // アイコン表示レイヤー（スワイプを妨げない）
+            // UIレイヤー
             VStack(spacing: 0) {
                 VStack(spacing: 12) {
                     // Icon with Arrows
@@ -61,53 +61,13 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-
-                    Spacer()
-                        .frame(height: 40) // スライダー用のスペース
                 }
                 .padding(.top, 50)
 
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false) // スワイプを妨げない
-
-            // 音量スライダーレイヤー（別のレイヤーで操作可能に）
-            VStack(spacing: 0) {
-                VStack(spacing: 12) {
-                    Spacer()
-                        .frame(height: 50) // アイコンの高さ分スペース
-
-                    // Volume Control
-                    HStack(spacing: 12) {
-                        Image(systemName: "speaker.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-
-                        Slider(
-                            value: Binding(
-                                get: { audioManager.volume },
-                                set: { audioManager.setVolume($0) }
-                            ),
-                            in: 1...4
-                        )
-                        .frame(width: 180)
-                        .accentColor(.white)
-
-                        Image(systemName: "speaker.wave.3.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-                    }
-                    .shadow(color: .black.opacity(0.5), radius: 5)
-                }
-                .padding(.top, 50)
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            // このレイヤーはスライダー操作可能
+            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
