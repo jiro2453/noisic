@@ -25,7 +25,6 @@ struct ContentView: View {
             // ビデオ背景
             VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
                 .ignoresSafeArea()
-                .id(currentIndex) // indexが変わったらビデオを再作成
 
             // グラデーションオーバーレイ
             LinearGradient(
@@ -62,33 +61,44 @@ struct ContentView: View {
                     .foregroundColor(.white.opacity(0.5))
                     .padding(.top, 20)
 
-                // デバッグ: 再生状態を表示
-                Text(audioManager.isPlaying ? "🔊 再生中" : "🔇 停止中")
-                    .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.7))
+                // デバッグ情報
+                VStack(spacing: 4) {
+                    Text(audioManager.isPlaying ? "🔊 再生中" : "🔇 停止中")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.7))
+
+                    Text("Index: \(currentIndex)")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.7))
+
+                    Text("Drag: \(Int(dragOffset))")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.7))
+                }
             }
-            .allowsHitTesting(false) // ジェスチャーをブロックしないように
+            .allowsHitTesting(false)
         }
-        .contentShape(Rectangle()) // 画面全体でジェスチャーを受け取る
+        .contentShape(Rectangle())
         .gesture(
-            DragGesture()
+            DragGesture(minimumDistance: 20)
                 .onChanged { value in
                     dragOffset = value.translation.width
+                    print("👆 Dragging: \(dragOffset)")
                 }
                 .onEnded { value in
-                    let threshold: CGFloat = 50
+                    let threshold: CGFloat = 30 // 閾値を下げた
+
+                    print("✋ Drag ended: \(value.translation.width)")
 
                     if value.translation.width > threshold {
                         // 右スワイプ（前へ）
-                        withAnimation {
-                            currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
-                        }
+                        print("➡️ Swipe right detected")
+                        currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
                         handleIndexChange()
                     } else if value.translation.width < -threshold {
                         // 左スワイプ（次へ）
-                        withAnimation {
-                            currentIndex = (currentIndex + 1) % extendedSounds.count
-                        }
+                        print("⬅️ Swipe left detected")
+                        currentIndex = (currentIndex + 1) % extendedSounds.count
                         handleIndexChange()
                     }
 
@@ -96,7 +106,6 @@ struct ContentView: View {
                 }
         )
         .onAppear {
-            // Auto-play bonfire on launch
             print("📱 ContentView appeared, isPlaying: \(audioManager.isPlaying)")
             audioManager.play(sound: .bonfire)
             print("📱 Bonfire play called")
@@ -104,9 +113,8 @@ struct ContentView: View {
     }
 
     private func handleIndexChange() {
-        // Auto-play ambient sound when swiping
         let sound = extendedSounds[currentIndex]
-        print("🎵 Switching to: \(sound.rawValue)")
+        print("🎵 Switching to: \(sound.rawValue), index: \(currentIndex)")
         audioManager.play(sound: sound)
 
         // Handle infinite loop by jumping to middle set
@@ -114,10 +122,12 @@ struct ContentView: View {
         if currentIndex <= 1 {
             DispatchQueue.main.async {
                 currentIndex = currentIndex + count
+                print("🔄 Jump to middle from start: \(currentIndex)")
             }
         } else if currentIndex >= (count * 3) - 2 {
             DispatchQueue.main.async {
                 currentIndex = currentIndex - count
+                print("🔄 Jump to middle from end: \(currentIndex)")
             }
         }
     }
