@@ -39,7 +39,7 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            // UIレイヤー（スワイプを妨げない）
+            // UIレイヤー
             VStack(spacing: 0) {
                 VStack(spacing: 12) {
                     // Icon with Arrows
@@ -61,28 +61,6 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-
-                    // 音量インジケーター（視覚的表示のみ）
-                    HStack(spacing: 4) {
-                        Image(systemName: "speaker.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-
-                        HStack(spacing: 3) {
-                            ForEach(1...4, id: \.self) { level in
-                                Circle()
-                                    .fill(audioManager.volume >= Float(level) ? Color.white : Color.white.opacity(0.2))
-                                    .frame(width: 6, height: 6)
-                            }
-                        }
-
-                        Image(systemName: "speaker.wave.3.fill")
-                            .font(.system(size: 10))
-                            .foregroundColor(.white)
-                            .opacity(0.5)
-                    }
-                    .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
 
@@ -90,37 +68,6 @@ struct ContentView: View {
             }
             .padding(.horizontal, 20)
             .allowsHitTesting(false)
-
-            // 音量コントロールボタンレイヤー（別レイヤーで配置）
-            VStack {
-                Spacer()
-                HStack(spacing: 15) {
-                    // 音量ダウンボタン
-                    Button(action: {
-                        let newVolume = max(1.0, audioManager.volume - 1.0)
-                        audioManager.setVolume(newVolume)
-                    }) {
-                        Image(systemName: "minus.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white)
-                            .opacity(0.7)
-                            .shadow(color: .black.opacity(0.5), radius: 5)
-                    }
-
-                    // 音量アップボタン
-                    Button(action: {
-                        let newVolume = min(4.0, audioManager.volume + 1.0)
-                        audioManager.setVolume(newVolume)
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white)
-                            .opacity(0.7)
-                            .shadow(color: .black.opacity(0.5), radius: 5)
-                    }
-                }
-                .padding(.bottom, 30)
-            }
         }
         .contentShape(Rectangle())
         .gesture(
