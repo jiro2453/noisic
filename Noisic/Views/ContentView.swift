@@ -39,7 +39,7 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            // UIレイヤー
+            // アイコン表示レイヤー（スワイプを妨げない）
             VStack(spacing: 0) {
                 VStack(spacing: 12) {
                     // Icon with Arrows
@@ -62,7 +62,23 @@ struct ContentView: View {
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
 
-                    // Volume Control (標準Sliderを使用)
+                    Spacer()
+                        .frame(height: 40) // スライダー用のスペース
+                }
+                .padding(.top, 50)
+
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .allowsHitTesting(false) // スワイプを妨げない
+
+            // 音量スライダーレイヤー（別のレイヤーで操作可能に）
+            VStack(spacing: 0) {
+                VStack(spacing: 12) {
+                    Spacer()
+                        .frame(height: 50) // アイコンの高さ分スペース
+
+                    // Volume Control
                     HStack(spacing: 12) {
                         Image(systemName: "speaker.fill")
                             .font(.system(size: 11))
@@ -91,7 +107,7 @@ struct ContentView: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false)
+            // このレイヤーはスライダー操作可能
         }
         .contentShape(Rectangle())
         .gesture(
