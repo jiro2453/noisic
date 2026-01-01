@@ -63,21 +63,19 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-                    .allowsHitTesting(false)
                 }
                 .padding(.top, 50)
 
                 Spacer()
-                    .allowsHitTesting(false)
                     .frame(maxHeight: 30)
 
                 // Music Player Section (Upper Center)
                 MusicPlayerView()
 
                 Spacer()
-                    .allowsHitTesting(false)
             }
             .padding(.horizontal, 20)
+            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
