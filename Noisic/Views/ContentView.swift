@@ -71,9 +71,8 @@ struct ContentView: View {
                     .allowsHitTesting(false)
                     .frame(maxHeight: 30)
 
-                // Music Player Section (Upper Center)
-                MusicPlayerView()
-                    .environmentObject(musicInfoReader)
+                // Music Player Section (Upper Center) - Temporarily disabled
+                // MusicPlayerView()
 
                 Spacer()
                     .allowsHitTesting(false)
