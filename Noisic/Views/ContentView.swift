@@ -73,12 +73,6 @@ struct ContentView: View {
                 MusicPlayerView()
 
                 Spacer()
-
-                // Debug: Show current index
-                Text("Index: \(currentIndex) / Actual: \(actualIndex)")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
-                    .padding(.bottom, 20)
             }
             .padding(.horizontal, 20)
             .allowsHitTesting(false)
