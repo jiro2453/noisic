@@ -12,6 +12,7 @@ import AVFoundation
 struct VideoPlayerView: View {
     let videoName: String
     @State private var player: AVPlayer?
+    @State private var observer: NSObjectProtocol?
 
     var body: some View {
         Group {
@@ -29,27 +30,22 @@ struct VideoPlayerView: View {
             player?.play()
         }
         .onDisappear {
-            player?.pause()
+            cleanupPlayer()
         }
         .ignoresSafeArea()
     }
 
     private func setupPlayer() {
         guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
-            print("❌ Video file not found: \(videoName).mp4")
             return
         }
 
         let playerItem = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: playerItem)
         newPlayer.isMuted = true
-        newPlayer.automaticallyWaitsToMinimizeStalling = false
-
-        // Preload and prepare for immediate playback
-        newPlayer.actionAtItemEnd = .none
 
         // Loop the video
-        NotificationCenter.default.addObserver(
+        observer = NotificationCenter.default.addObserver(
             forName: .AVPlayerItemDidPlayToEndTime,
             object: playerItem,
             queue: .main
@@ -59,13 +55,19 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
+        newPlayer.play()
+    }
 
-        // Start playing immediately after setup
-        DispatchQueue.main.async {
-            newPlayer.play()
+    private func cleanupPlayer() {
+        player?.pause()
+        player?.replaceCurrentItem(with: nil)
+
+        if let observer = observer {
+            NotificationCenter.default.removeObserver(observer)
         }
 
-        print("✅ Video player setup complete: \(videoName).mp4")
+        observer = nil
+        player = nil
     }
 }
 
