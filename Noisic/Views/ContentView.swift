@@ -7,9 +7,42 @@
 
 import SwiftUI
 
+// Custom Slider with full-width track (Float version)
+struct CustomSlider: View {
+    @Binding var value: Float
+    let range: ClosedRange<Float>
+    let trackHeight: CGFloat = 4
+    let thumbSize: CGFloat = 20
+
+    var body: some View {
+        let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
+        let thumbOffset = percentage * 180 // Fixed width
+
+        ZStack(alignment: .leading) {
+            // Background track
+            Rectangle()
+                .fill(Color.white.opacity(0.2))
+                .frame(width: 180, height: trackHeight)
+                .cornerRadius(trackHeight / 2)
+
+            // Active track
+            Rectangle()
+                .fill(Color.white)
+                .frame(width: thumbOffset, height: trackHeight)
+                .cornerRadius(trackHeight / 2)
+
+            // Thumb
+            Circle()
+                .fill(Color.gray)
+                .frame(width: thumbSize, height: thumbSize)
+                .offset(x: thumbOffset - thumbSize / 2)
+        }
+        .frame(width: 180, height: 44)
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
-    @EnvironmentObject var musicInfoReader: MusicInfoReader
     @State private var currentIndex = 11
 
     private var extendedSounds: [AmbientSound] {
@@ -63,14 +96,35 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-                    .allowsHitTesting(false)
+
+                    // Volume Control
+                    HStack(spacing: 12) {
+                        Image(systemName: "speaker.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                            .opacity(0.5)
+
+                        CustomSlider(
+                            value: Binding(
+                                get: { audioManager.volume },
+                                set: { audioManager.setVolume($0) }
+                            ),
+                            range: 1...4
+                        )
+
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.white)
+                            .opacity(0.5)
+                    }
+                    .shadow(color: .black.opacity(0.5), radius: 5)
                 }
                 .padding(.top, 50)
 
                 Spacer()
-                    .allowsHitTesting(false)
             }
             .padding(.horizontal, 20)
+            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
