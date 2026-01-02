@@ -7,39 +7,187 @@
 
 import SwiftUI
 
-struct MusicPlayerView: View {
-    @EnvironmentObject var musicInfoReader: MusicInfoReader
+// Seek bar with same style as CustomSlider (white theme)
+struct SeekBar: View {
+    @Binding var value: Double
+    let range: ClosedRange<Double>
+    let onEditingChanged: (Bool) -> Void
+
+    let trackHeight: CGFloat = 4
+    let thumbSize: CGFloat = 20
+    let barWidth: CGFloat = 280
+
+    @State private var isDragging = false
 
     var body: some View {
-        VStack(spacing: 20) {
-            // Simple Vinyl Record
+        let percentage = range.upperBound > range.lowerBound
+            ? CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
+            : 0
+        let clampedPercentage = min(max(percentage, 0), 1)
+        let thumbOffset = clampedPercentage * barWidth
+
+        ZStack(alignment: .leading) {
+            // Background track (same as CustomSlider)
+            Rectangle()
+                .fill(Color.white.opacity(0.2))
+                .frame(width: barWidth, height: trackHeight)
+                .cornerRadius(trackHeight / 2)
+
+            // Active track (same as CustomSlider)
+            Rectangle()
+                .fill(Color.white)
+                .frame(width: thumbOffset, height: trackHeight)
+                .cornerRadius(trackHeight / 2)
+
+            // Thumb (same as CustomSlider)
+            Circle()
+                .fill(Color.gray)
+                .frame(width: thumbSize, height: thumbSize)
+                .offset(x: thumbOffset - thumbSize / 2)
+        }
+        .frame(width: barWidth, height: 44)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { gesture in
+                    if !isDragging {
+                        isDragging = true
+                        onEditingChanged(true)
+                    }
+                    let newPercentage = min(max(gesture.location.x / barWidth, 0), 1)
+                    let newValue = range.lowerBound + Double(newPercentage) * (range.upperBound - range.lowerBound)
+                    value = newValue
+                }
+                .onEnded { _ in
+                    isDragging = false
+                    onEditingChanged(false)
+                }
+        )
+    }
+}
+
+struct MusicPlayerView: View {
+    @EnvironmentObject var musicInfoReader: MusicInfoReader
+    @State private var isSeeking = false
+    @State private var seekValue: Double = 0
+
+    var body: some View {
+        VStack(spacing: 16) {
+            // Album Artwork / Vinyl Record
             ZStack {
                 Circle()
                     .fill(Color.black.opacity(0.6))
-                    .frame(width: 380, height: 380)
+                    .frame(width: 300, height: 300)
 
                 Circle()
                     .fill(Color.black.opacity(0.7))
-                    .frame(width: 310, height: 310)
+                    .frame(width: 250, height: 250)
 
-                Circle()
-                    .fill(Color.gray.opacity(0.3))
-                    .frame(width: 290, height: 290)
-                    .overlay(
-                        Image(systemName: "music.note")
-                            .font(.system(size: 80))
-                            .foregroundColor(.white.opacity(0.4))
-                    )
+                if let artwork = musicInfoReader.musicInfo.artwork {
+                    Image(uiImage: artwork)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 230, height: 230)
+                        .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 230, height: 230)
+                        .overlay(
+                            Image(systemName: "music.note")
+                                .font(.system(size: 60))
+                                .foregroundColor(.white.opacity(0.4))
+                        )
+                }
 
                 Circle()
                     .fill(Color.black)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 30, height: 30)
             }
 
-            Text("Music Player")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.white)
-                .opacity(0.55)
+            // Song Info
+            VStack(spacing: 4) {
+                Text(musicInfoReader.musicInfo.title ?? "再生中の曲がありません")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+
+                Text(musicInfoReader.musicInfo.artist ?? "")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.6))
+                    .lineLimit(1)
+            }
+            .padding(.top, 8)
+
+            // Seek Bar
+            VStack(spacing: 4) {
+                SeekBar(
+                    value: Binding(
+                        get: { isSeeking ? seekValue : musicInfoReader.currentTime },
+                        set: { seekValue = $0 }
+                    ),
+                    range: 0...max(musicInfoReader.duration, 1),
+                    onEditingChanged: { editing in
+                        isSeeking = editing
+                        if !editing {
+                            musicInfoReader.seek(to: seekValue)
+                        }
+                    }
+                )
+
+                // Time Labels
+                HStack {
+                    Text(formatTime(isSeeking ? seekValue : musicInfoReader.currentTime))
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.5))
+
+                    Spacer()
+
+                    Text(formatTime(musicInfoReader.duration))
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .frame(width: 280)
+            }
+
+            // Playback Controls
+            HStack(spacing: 40) {
+                Button(action: {
+                    musicInfoReader.skipToPrevious()
+                }) {
+                    Image(systemName: "backward.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+
+                Button(action: {
+                    musicInfoReader.playPause()
+                }) {
+                    Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 36))
+                        .foregroundColor(.white)
+                        .frame(width: 60, height: 60)
+                        .background(Color.white.opacity(0.15))
+                        .clipShape(Circle())
+                }
+
+                Button(action: {
+                    musicInfoReader.skipToNext()
+                }) {
+                    Image(systemName: "forward.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+            }
+            .padding(.top, 8)
         }
+        .padding(.horizontal, 20)
+    }
+
+    private func formatTime(_ time: TimeInterval) -> String {
+        guard time.isFinite && time >= 0 else { return "0:00" }
+        let minutes = Int(time) / 60
+        let seconds = Int(time) % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 }
