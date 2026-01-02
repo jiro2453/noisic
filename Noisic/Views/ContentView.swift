@@ -26,10 +26,6 @@ struct ContentView: View {
             VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
                 .ignoresSafeArea()
                 .id(actualIndex)
-                .transition(.asymmetric(
-                    insertion: .move(edge: .trailing),
-                    removal: .move(edge: .leading)
-                ))
 
             // グラデーションオーバーレイ
             LinearGradient(
@@ -83,15 +79,15 @@ struct ContentView: View {
                     let threshold: CGFloat = 30
 
                     if value.translation.width > threshold {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        DispatchQueue.main.async {
                             currentIndex = (currentIndex - 1 + extendedSounds.count) % extendedSounds.count
+                            handleIndexChange()
                         }
-                        handleIndexChange()
                     } else if value.translation.width < -threshold {
-                        withAnimation(.easeInOut(duration: 0.3)) {
+                        DispatchQueue.main.async {
                             currentIndex = (currentIndex + 1) % extendedSounds.count
+                            handleIndexChange()
                         }
-                        handleIndexChange()
                     }
                 }
         )
@@ -106,16 +102,12 @@ struct ContentView: View {
 
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                withAnimation(.none) {
-                    currentIndex = currentIndex + count
-                }
+            DispatchQueue.main.async {
+                currentIndex = currentIndex + count
             }
         } else if currentIndex >= (count * 3) - 2 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                withAnimation(.none) {
-                    currentIndex = currentIndex - count
-                }
+            DispatchQueue.main.async {
+                currentIndex = currentIndex - count
             }
         }
     }
