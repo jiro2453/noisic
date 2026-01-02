@@ -17,12 +17,20 @@ class MusicInfoReader: ObservableObject {
 
     private var timer: Timer?
     private var player: MPMusicPlayerController?
+    private var isSetup = false
 
     init() {
-        requestAuthorization()
+        // Delay initialization to avoid blocking app launch
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.requestAuthorization()
+        }
     }
 
     private func requestAuthorization() {
+        #if targetEnvironment(simulator)
+        // MPMusicPlayerController doesn't work on simulator
+        return
+        #else
         let status = MPMediaLibrary.authorizationStatus()
 
         switch status {
@@ -40,9 +48,13 @@ class MusicInfoReader: ObservableObject {
             // Denied or restricted
             break
         }
+        #endif
     }
 
     private func setupPlayer() {
+        guard !isSetup else { return }
+        isSetup = true
+
         player = MPMusicPlayerController.systemMusicPlayer
         player?.beginGeneratingPlaybackNotifications()
         isAuthorized = true
