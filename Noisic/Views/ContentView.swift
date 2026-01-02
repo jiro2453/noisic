@@ -69,8 +69,8 @@ struct ContentView: View {
                 Spacer()
                     .frame(maxHeight: 30)
 
-                // Music Player Section (Upper Center)
-                MusicPlayerView()
+                // Music Player Section (Upper Center) - Temporarily disabled
+                // MusicPlayerView()
 
                 Spacer()
             }
