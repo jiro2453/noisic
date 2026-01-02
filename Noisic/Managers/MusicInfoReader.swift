@@ -13,18 +13,44 @@ class MusicInfoReader: ObservableObject {
     @Published var isPlaying: Bool = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
+    @Published var isAuthorized: Bool = false
 
     private var timer: Timer?
-    private let player = MPMusicPlayerController.systemMusicPlayer
+    private var player: MPMusicPlayerController?
 
     init() {
-        // Enable playback notifications
-        player.beginGeneratingPlaybackNotifications()
+        requestAuthorization()
+    }
+
+    private func requestAuthorization() {
+        let status = MPMediaLibrary.authorizationStatus()
+
+        switch status {
+        case .authorized:
+            setupPlayer()
+        case .notDetermined:
+            MPMediaLibrary.requestAuthorization { [weak self] newStatus in
+                DispatchQueue.main.async {
+                    if newStatus == .authorized {
+                        self?.setupPlayer()
+                    }
+                }
+            }
+        default:
+            // Denied or restricted
+            break
+        }
+    }
+
+    private func setupPlayer() {
+        player = MPMusicPlayerController.systemMusicPlayer
+        player?.beginGeneratingPlaybackNotifications()
+        isAuthorized = true
         startMonitoring()
     }
 
     deinit {
-        player.endGeneratingPlaybackNotifications()
+        player?.endGeneratingPlaybackNotifications()
         stopMonitoring()
     }
 
@@ -44,7 +70,7 @@ class MusicInfoReader: ObservableObject {
     }
 
     private func updateMusicInfo() {
-        guard let nowPlaying = player.nowPlayingItem else {
+        guard let player = player, let nowPlaying = player.nowPlayingItem else {
             DispatchQueue.main.async {
                 self.musicInfo = MusicInfo(title: nil, artist: nil, artwork: nil, isPlaying: false)
                 self.isPlaying = false
@@ -99,6 +125,7 @@ class MusicInfoReader: ObservableObject {
     // MARK: - Playback Controls
 
     func playPause() {
+        guard let player = player else { return }
         if player.playbackState == .playing {
             player.pause()
         } else {
@@ -114,21 +141,21 @@ class MusicInfoReader: ObservableObject {
     }
 
     func skipToNext() {
-        player.skipToNextItem()
+        player?.skipToNextItem()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
     }
 
     func skipToPrevious() {
-        player.skipToPreviousItem()
+        player?.skipToPreviousItem()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
     }
 
     func seek(to time: TimeInterval) {
-        player.currentPlaybackTime = time
+        player?.currentPlaybackTime = time
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
