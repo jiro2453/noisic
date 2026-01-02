@@ -146,7 +146,9 @@ struct ContentView: View {
                 }
         )
         .onAppear {
+            print("DEBUG: ContentView onAppear")
             audioManager.play(sound: .bonfire)
+            print("DEBUG: audioManager.play called")
         }
     }
 
