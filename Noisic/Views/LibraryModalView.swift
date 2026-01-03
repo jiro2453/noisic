@@ -65,10 +65,11 @@ struct HoneycombGrid: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // 6枚が収まるサイズを基準に計算（大きめ）
-            let hexSize = geometry.size.width / 4.0
-            let horizontalSpacing = hexSize * 0.78
-            let verticalSpacing = hexSize * 0.68
+            // 6枚が収まるサイズを基準に計算
+            let hexSize = geometry.size.width / 5.5
+            // 重ならないようにスペーシングを広めに設定
+            let horizontalSpacing = hexSize * 0.88
+            let verticalSpacing = hexSize * 0.76
 
             // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
             let rowData = calculateRows(albums: Array(albums.prefix(50)))
