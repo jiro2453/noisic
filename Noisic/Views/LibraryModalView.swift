@@ -66,17 +66,17 @@ struct HoneycombGrid: View {
     var body: some View {
         GeometryReader { geometry in
             // 6枚が収まるサイズを基準に計算（大きめ）
-            let hexSize = geometry.size.width / 4.5
+            let hexSize = geometry.size.width / 4.0
             let horizontalSpacing = hexSize * 0.78
             let verticalSpacing = hexSize * 0.68
 
             // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
-            let rowData = calculateRows(albums: Array(albums.prefix(30)))
+            let rowData = calculateRows(albums: Array(albums.prefix(50)))
 
             ScrollView {
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(rowData.enumerated()), id: \.offset) { rowIndex, rowAlbums in
-                        let isEvenRow = rowIndex % 2 == 1 // 0始まりなので偶数インデックスが奇数行
+                        let isEvenRow = rowIndex % 2 == 1
                         let itemCount = isEvenRow ? 6 : 5
                         let rowWidth = CGFloat(itemCount - 1) * horizontalSpacing + hexSize
                         let startX = (geometry.size.width - rowWidth) / 2 + hexSize / 2
@@ -85,12 +85,11 @@ struct HoneycombGrid: View {
                             let xOffset = startX + CGFloat(colIndex) * horizontalSpacing
                             let yOffset = CGFloat(rowIndex) * verticalSpacing + hexSize / 2
 
-                            Button(action: {
-                                onAlbumTap(album)
-                            }) {
-                                HexagonArtwork(artwork: album.artwork, size: hexSize)
-                            }
-                            .position(x: xOffset, y: yOffset)
+                            HexagonArtwork(artwork: album.artwork, size: hexSize)
+                                .position(x: xOffset, y: yOffset)
+                                .onTapGesture {
+                                    onAlbumTap(album)
+                                }
                         }
                     }
                 }
