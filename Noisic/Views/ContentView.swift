@@ -56,7 +56,10 @@ struct CustomSlider: View {
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
+    @EnvironmentObject var libraryManager: LibraryManager
     @State private var currentIndex = 11
+    @State private var showLibraryModal = false
+    @State private var modalDragOffset: CGSize = .zero
 
     private var extendedSounds: [AmbientSound] {
         AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
@@ -141,6 +144,19 @@ struct ContentView: View {
                     .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
+
+            // 右下のモーダルトリガー
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    ModalTriggerView(
+                        dragOffset: $modalDragOffset,
+                        showModal: $showLibraryModal
+                    )
+                }
+            }
+            .ignoresSafeArea()
         }
         .contentShape(Rectangle())
         .gesture(
@@ -163,6 +179,12 @@ struct ContentView: View {
         )
         .onAppear {
             audioManager.play(sound: .bonfire)
+        }
+        .fullScreenCover(isPresented: $showLibraryModal) {
+            LibraryModalView(isPresented: $showLibraryModal) { album in
+                libraryManager.playAlbum(album)
+            }
+            .environmentObject(libraryManager)
         }
     }
 
