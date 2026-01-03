@@ -14,15 +14,15 @@ struct HalfModalModifier: ViewModifier {
             content
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
-                .presentationBackground(Color.white.opacity(0.9))
+                .presentationBackground(Color.white.opacity(0.7))
         } else if #available(iOS 16.0, *) {
             content
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
-                .background(Color.white.opacity(0.9))
+                .background(Color.white.opacity(0.7))
         } else {
             content
-                .background(Color.white.opacity(0.9))
+                .background(Color.white.opacity(0.7))
         }
     }
 }
@@ -73,53 +73,12 @@ struct CustomSlider: View {
     }
 }
 
-// 右下のモーダルトリガーUI
-struct ModalTriggerView: View {
-    @Binding var dragOffset: CGSize
-    @Binding var showModal: Bool
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.white.opacity(0.2))
-                .frame(width: 120, height: 120)
-                .overlay(
-                    Image(systemName: "chevron.up.left")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.white.opacity(0.6))
-                        .offset(x: -25, y: -25)
-                )
-                .offset(x: 35, y: 35)
-        }
-        .frame(width: 70, height: 70)
-        .clipped()
-        .offset(dragOffset)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    let newX = min(0, value.translation.width)
-                    let newY = min(0, value.translation.height)
-                    dragOffset = CGSize(width: newX, height: newY)
-                }
-                .onEnded { value in
-                    if value.translation.width < -80 || value.translation.height < -80 {
-                        showModal = true
-                    }
-                    withAnimation(.spring()) {
-                        dragOffset = .zero
-                    }
-                }
-        )
-    }
-}
-
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
     @EnvironmentObject var libraryManager: LibraryManager
     @State private var currentIndex = 11
     @State private var showLibraryModal = false
-    @State private var modalDragOffset: CGSize = .zero
 
     private var extendedSounds: [AmbientSound] {
         AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
@@ -200,23 +159,10 @@ struct ContentView: View {
                 Spacer()
 
                 // Music Player
-                MusicPlayerView()
+                MusicPlayerView(showLibraryModal: $showLibraryModal)
                     .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
-
-            // 右下のモーダルトリガー
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    ModalTriggerView(
-                        dragOffset: $modalDragOffset,
-                        showModal: $showLibraryModal
-                    )
-                }
-            }
-            .ignoresSafeArea()
         }
         .contentShape(Rectangle())
         .gesture(

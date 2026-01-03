@@ -61,19 +61,20 @@ struct HexagonArtwork: View {
 // ハニカムグリッドレイアウト
 struct HoneycombGrid: View {
     let albums: [LibraryAlbum]
-    let hexSize: CGFloat = 80
+    let hexSize: CGFloat = 100
     let onAlbumTap: (LibraryAlbum) -> Void
 
     var body: some View {
-        let horizontalSpacing = hexSize * 0.75
-        let verticalSpacing = hexSize * 0.866 // sqrt(3)/2
+        // 重ならないようにスペーシングを調整
+        let horizontalSpacing = hexSize * 0.9
+        let verticalSpacing = hexSize * 0.85
 
         GeometryReader { geometry in
             ScrollView {
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(albums.prefix(30).enumerated()), id: \.element.id) { index, album in
-                        let row = index / 5
-                        let col = index % 5
+                        let row = index / 4
+                        let col = index % 4
                         let isOddRow = row % 2 == 1
                         let xOffset = CGFloat(col) * horizontalSpacing + (isOddRow ? horizontalSpacing / 2 : 0) + hexSize / 2
                         let yOffset = CGFloat(row) * verticalSpacing + hexSize / 2
@@ -88,7 +89,7 @@ struct HoneycombGrid: View {
                 }
                 .frame(
                     width: geometry.size.width,
-                    height: CGFloat((albums.prefix(30).count + 4) / 5) * verticalSpacing + hexSize
+                    height: CGFloat((albums.prefix(30).count + 3) / 4) * verticalSpacing + hexSize
                 )
             }
         }
@@ -102,17 +103,13 @@ struct LibraryModalView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ヘッダー
-            HStack {
-                Text("ライブラリ")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.black.opacity(0.8))
-
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.top, 16)
-            .padding(.bottom, 12)
+            // ヘッダー（中央配置）
+            Text("Library")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.black.opacity(0.7))
+                .frame(maxWidth: .infinity)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
 
             // アルバムグリッド
             if libraryManager.recentlyAdded.isEmpty {
@@ -121,7 +118,7 @@ struct LibraryModalView: View {
                     Image(systemName: "music.note.house")
                         .font(.system(size: 48))
                         .foregroundColor(.black.opacity(0.3))
-                    Text("アルバムがありません")
+                    Text("No albums")
                         .foregroundColor(.black.opacity(0.5))
                 }
                 Spacer()
@@ -130,7 +127,7 @@ struct LibraryModalView: View {
                     onAlbumSelected(album)
                     isPresented = false
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 10)
             }
         }
         .onAppear {

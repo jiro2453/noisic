@@ -142,8 +142,33 @@ struct VinylRecordView: View {
     }
 }
 
+// 六角形の形状（ライブラリボタン用）
+struct HexagonButtonShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        var path = Path()
+
+        for i in 0..<6 {
+            let angle = CGFloat(i) * .pi / 3 - .pi / 6
+            let point = CGPoint(
+                x: center.x + radius * cos(angle),
+                y: center.y + radius * sin(angle)
+            )
+            if i == 0 {
+                path.move(to: point)
+            } else {
+                path.addLine(to: point)
+            }
+        }
+        path.closeSubpath()
+        return path
+    }
+}
+
 struct MusicPlayerView: View {
     @EnvironmentObject var musicInfoReader: MusicInfoReader
+    @Binding var showLibraryModal: Bool
     @State private var isSeeking = false
     @State private var seekValue: Double = 0
 
@@ -202,7 +227,7 @@ struct MusicPlayerView: View {
             }
 
             // Playback Controls
-            HStack(spacing: 40) {
+            HStack(spacing: 32) {
                 Button(action: {
                     musicInfoReader.skipToPrevious()
                 }) {
@@ -226,6 +251,20 @@ struct MusicPlayerView: View {
                     Image(systemName: "forward.fill")
                         .font(.system(size: 24))
                         .foregroundColor(.white.opacity(0.8))
+                }
+
+                // Library Button (Hexagon)
+                Button(action: {
+                    showLibraryModal = true
+                }) {
+                    HexagonButtonShape()
+                        .stroke(Color.white.opacity(0.6), lineWidth: 2)
+                        .frame(width: 28, height: 28)
+                        .overlay(
+                            Image(systemName: "music.note.list")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.8))
+                        )
                 }
             }
             .padding(.top, 8)
