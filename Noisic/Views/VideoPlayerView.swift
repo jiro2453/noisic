@@ -11,35 +11,60 @@ import AVFoundation
 
 struct VideoPlayerView: View {
     let videoName: String
-    @State private var player: AVPlayer?
-    @State private var observer: NSObjectProtocol?
-    @State private var isReady = false
 
     var body: some View {
-        Group {
-            if isReady, let player = player {
-                VideoPlayerLayerView(player: player)
-                    .blur(radius: 5)
-            } else {
-                Color.black
-            }
-        }
-        .onAppear {
-            print("DEBUG: VideoPlayerView onAppear - videoName: \(videoName)")
-            setupPlayer()
-        }
-        .onDisappear {
-            cleanupPlayer()
-        }
-        .ignoresSafeArea()
+        VideoPlayerContainer(videoName: videoName)
+            .ignoresSafeArea()
+    }
+}
+
+// UIViewControllerRepresentableを使用（UIViewRepresentableより安定）
+struct VideoPlayerContainer: UIViewControllerRepresentable {
+    let videoName: String
+
+    func makeUIViewController(context: Context) -> VideoPlayerViewController {
+        print("DEBUG: VideoPlayerContainer makeUIViewController")
+        return VideoPlayerViewController(videoName: videoName)
     }
 
-    private func setupPlayer() {
-        print("DEBUG: setupPlayer started for \(videoName)")
+    func updateUIViewController(_ uiViewController: VideoPlayerViewController, context: Context) {
+        // 動画名が変わった場合は再読み込み
+        if uiViewController.currentVideoName != videoName {
+            uiViewController.loadVideo(named: videoName)
+        }
+    }
+}
 
-        guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
-            print("DEBUG: Video file NOT found: \(videoName).mp4")
-            isReady = true  // 動画がなくても画面を表示
+class VideoPlayerViewController: UIViewController {
+    var currentVideoName: String
+    private var player: AVPlayer?
+    private var playerLayer: AVPlayerLayer?
+    private var observer: NSObjectProtocol?
+
+    init(videoName: String) {
+        self.currentVideoName = videoName
+        super.init(nibName: nil, bundle: nil)
+        print("DEBUG: VideoPlayerViewController init - \(videoName)")
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        print("DEBUG: VideoPlayerViewController viewDidLoad")
+        view.backgroundColor = .black
+
+        // バックグラウンドスレッドで動画を読み込む
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.loadVideoAsync()
+        }
+    }
+
+    private func loadVideoAsync() {
+        guard let url = Bundle.main.url(forResource: currentVideoName, withExtension: "mp4") else {
+            print("DEBUG: Video file NOT found: \(currentVideoName).mp4")
             return
         }
 
@@ -49,25 +74,58 @@ struct VideoPlayerView: View {
         let newPlayer = AVPlayer(playerItem: playerItem)
         newPlayer.isMuted = true
 
-        // Loop the video
-        observer = NotificationCenter.default.addObserver(
-            forName: .AVPlayerItemDidPlayToEndTime,
-            object: playerItem,
-            queue: .main
-        ) { _ in
-            newPlayer.seek(to: .zero)
-            newPlayer.play()
-        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
 
-        player = newPlayer
-        isReady = true
-        newPlayer.play()
-        print("DEBUG: Player setup complete")
+            self.player = newPlayer
+
+            let layer = AVPlayerLayer(player: newPlayer)
+            layer.videoGravity = .resizeAspectFill
+            layer.frame = self.view.bounds
+            self.view.layer.addSublayer(layer)
+            self.playerLayer = layer
+
+            // ブラー効果を追加
+            let blurEffect = UIBlurEffect(style: .regular)
+            let blurView = UIVisualEffectView(effect: blurEffect)
+            blurView.frame = self.view.bounds
+            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+            blurView.alpha = 0.3
+            self.view.addSubview(blurView)
+
+            // ループ再生
+            self.observer = NotificationCenter.default.addObserver(
+                forName: .AVPlayerItemDidPlayToEndTime,
+                object: playerItem,
+                queue: .main
+            ) { _ in
+                newPlayer.seek(to: .zero)
+                newPlayer.play()
+            }
+
+            newPlayer.play()
+            print("DEBUG: Video playing")
+        }
     }
 
-    private func cleanupPlayer() {
+    func loadVideo(named name: String) {
+        currentVideoName = name
+        cleanup()
+
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.loadVideoAsync()
+        }
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        playerLayer?.frame = view.bounds
+    }
+
+    private func cleanup() {
         player?.pause()
         player?.replaceCurrentItem(with: nil)
+        playerLayer?.removeFromSuperlayer()
 
         if let observer = observer {
             NotificationCenter.default.removeObserver(observer)
@@ -75,41 +133,11 @@ struct VideoPlayerView: View {
 
         observer = nil
         player = nil
-        isReady = false
-    }
-}
-
-// Custom video player without controls
-struct VideoPlayerLayerView: UIViewRepresentable {
-    let player: AVPlayer
-
-    func makeUIView(context: Context) -> UIView {
-        print("DEBUG: VideoPlayerLayerView makeUIView")
-        let view = UIView()
-        view.backgroundColor = .black
-
-        let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.videoGravity = .resizeAspectFill
-
-        view.layer.addSublayer(playerLayer)
-        context.coordinator.playerLayer = playerLayer
-
-        return view
+        playerLayer = nil
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            if let playerLayer = context.coordinator.playerLayer {
-                playerLayer.frame = uiView.bounds
-            }
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-
-    class Coordinator {
-        var playerLayer: AVPlayerLayer?
+    deinit {
+        cleanup()
+        print("DEBUG: VideoPlayerViewController deinit")
     }
 }
