@@ -78,26 +78,26 @@ struct VinylRecordView: View {
         ZStack {
             Circle()
                 .fill(Color.black.opacity(0.6))
-                .frame(width: 300, height: 300)
+                .frame(width: 330, height: 330)
 
             Circle()
                 .fill(Color.black.opacity(0.7))
-                .frame(width: 250, height: 250)
+                .frame(width: 280, height: 280)
 
             if let artwork = artwork {
                 Image(uiImage: artwork)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 230, height: 230)
+                    .frame(width: 260, height: 260)
                     .clipShape(Circle())
                     .rotationEffect(.degrees(rotationAngle))
             } else {
                 Circle()
                     .fill(Color.gray.opacity(0.3))
-                    .frame(width: 230, height: 230)
+                    .frame(width: 260, height: 260)
                     .overlay(
                         Image(systemName: "music.note")
-                            .font(.system(size: 60))
+                            .font(.system(size: 70))
                             .foregroundColor(.white.opacity(0.4))
                     )
                     .rotationEffect(.degrees(rotationAngle))
@@ -105,7 +105,7 @@ struct VinylRecordView: View {
 
             Circle()
                 .fill(Color.black)
-                .frame(width: 30, height: 30)
+                .frame(width: 35, height: 35)
         }
         .onChange(of: isPlaying) { playing in
             if playing {
@@ -154,6 +154,7 @@ struct MusicPlayerView: View {
                 artwork: musicInfoReader.musicInfo.artwork,
                 isPlaying: musicInfoReader.isPlaying
             )
+            .offset(y: -20)
 
             // Song Info
             VStack(spacing: 4) {
