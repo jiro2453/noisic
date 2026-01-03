@@ -53,6 +53,54 @@ struct CustomSlider: View {
     }
 }
 
+// 右下のモーダルトリガーUI
+struct ModalTriggerView: View {
+    @Binding var dragOffset: CGSize
+    @Binding var showModal: Bool
+
+    var body: some View {
+        // モーダルの左上角を表示
+        ZStack {
+            // 背景の一部（モーダルのプレビュー）
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.black.opacity(0.7))
+                .frame(width: 120, height: 120)
+                .overlay(
+                    VStack(spacing: 8) {
+                        Image(systemName: "square.grid.2x2")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white.opacity(0.6))
+                        Text("ライブラリ")
+                            .font(.system(size: 10))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                )
+                .offset(x: 40, y: 40) // 右下に少しはみ出すように
+        }
+        .frame(width: 80, height: 80)
+        .clipped()
+        .offset(dragOffset)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    // 左上方向へのドラッグのみ許可
+                    let newX = min(0, value.translation.width)
+                    let newY = min(0, value.translation.height)
+                    dragOffset = CGSize(width: newX, height: newY)
+                }
+                .onEnded { value in
+                    // 一定以上ドラッグしたらモーダルを表示
+                    if value.translation.width < -100 || value.translation.height < -100 {
+                        showModal = true
+                    }
+                    withAnimation(.spring()) {
+                        dragOffset = .zero
+                    }
+                }
+        )
+    }
+}
+
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
