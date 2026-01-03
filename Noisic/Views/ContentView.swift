@@ -62,22 +62,25 @@ struct ModalTriggerView: View {
         // モーダルの左上角を表示
         ZStack {
             // 背景の一部（モーダルのプレビュー）
-            RoundedRectangle(cornerRadius: 20)
-                .fill(Color.black.opacity(0.7))
-                .frame(width: 120, height: 120)
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color.black.opacity(0.8))
+                .frame(width: 200, height: 200)
                 .overlay(
-                    VStack(spacing: 8) {
+                    VStack(spacing: 12) {
                         Image(systemName: "square.grid.2x2")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white.opacity(0.6))
+                            .font(.system(size: 32))
+                            .foregroundColor(.white.opacity(0.7))
                         Text("ライブラリ")
-                            .font(.system(size: 10))
-                            .foregroundColor(.white.opacity(0.5))
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
+                        Image(systemName: "arrow.up.left")
+                            .font(.system(size: 16))
+                            .foregroundColor(.white.opacity(0.4))
                     }
                 )
-                .offset(x: 40, y: 40) // 右下に少しはみ出すように
+                .offset(x: 50, y: 50)
         }
-        .frame(width: 80, height: 80)
+        .frame(width: 150, height: 150)
         .clipped()
         .offset(dragOffset)
         .gesture(
