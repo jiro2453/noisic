@@ -39,7 +39,8 @@ class VideoPlayerViewController: UIViewController {
     var currentVideoName: String
     private var player: AVPlayer?
     private var playerLayer: AVPlayerLayer?
-    private var observer: NSObjectProtocol?
+    private var loopObserver: NSObjectProtocol?
+    private var foregroundObserver: NSObjectProtocol?
 
     init(videoName: String) {
         self.currentVideoName = videoName
@@ -53,6 +54,15 @@ class VideoPlayerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
+
+        // フォアグラウンドに戻ったときに再生を再開
+        foregroundObserver = NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.player?.play()
+        }
 
         // バックグラウンドスレッドで動画を読み込む
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -81,7 +91,7 @@ class VideoPlayerViewController: UIViewController {
             self.playerLayer = layer
 
             // ループ再生
-            self.observer = NotificationCenter.default.addObserver(
+            self.loopObserver = NotificationCenter.default.addObserver(
                 forName: .AVPlayerItemDidPlayToEndTime,
                 object: playerItem,
                 queue: .main
@@ -96,7 +106,7 @@ class VideoPlayerViewController: UIViewController {
 
     func loadVideo(named name: String) {
         currentVideoName = name
-        cleanup()
+        cleanupPlayer()
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.loadVideoAsync()
@@ -108,18 +118,27 @@ class VideoPlayerViewController: UIViewController {
         playerLayer?.frame = view.bounds
     }
 
-    private func cleanup() {
+    private func cleanupPlayer() {
         player?.pause()
         player?.replaceCurrentItem(with: nil)
         playerLayer?.removeFromSuperlayer()
 
-        if let observer = observer {
-            NotificationCenter.default.removeObserver(observer)
+        if let loopObserver = loopObserver {
+            NotificationCenter.default.removeObserver(loopObserver)
         }
 
-        observer = nil
+        loopObserver = nil
         player = nil
         playerLayer = nil
+    }
+
+    private func cleanup() {
+        cleanupPlayer()
+
+        if let foregroundObserver = foregroundObserver {
+            NotificationCenter.default.removeObserver(foregroundObserver)
+        }
+        foregroundObserver = nil
     }
 
     deinit {
