@@ -18,6 +18,8 @@ struct LibraryAlbum: Identifiable {
 
 class LibraryManager: ObservableObject {
     @Published var recentlyAdded: [LibraryAlbum] = []
+    @Published var recentlyPlayed: [LibraryAlbum] = []
+    @Published var combinedAlbums: [LibraryAlbum] = []
     @Published var allAlbums: [LibraryAlbum] = []
     @Published var isAuthorized = false
 
@@ -55,6 +57,7 @@ class LibraryManager: ObservableObject {
 
     func loadLibrary() {
         loadRecentlyAdded()
+        loadRecentlyPlayed()
         loadAllAlbums()
     }
 
@@ -65,6 +68,7 @@ class LibraryManager: ObservableObject {
             guard let collections = query.collections else {
                 DispatchQueue.main.async {
                     self?.recentlyAdded = []
+                    self?.updateCombinedAlbums()
                 }
                 return
             }
@@ -76,8 +80,8 @@ class LibraryManager: ObservableObject {
                 return date1 > date2
             }
 
-            // Take first 30 albums
-            let recentAlbums = Array(sortedCollections.prefix(30))
+            // Take first 50 albums
+            let recentAlbums = Array(sortedCollections.prefix(50))
 
             let albums = recentAlbums.compactMap { collection -> LibraryAlbum? in
                 guard let representativeItem = collection.representativeItem else { return nil }
@@ -93,8 +97,78 @@ class LibraryManager: ObservableObject {
 
             DispatchQueue.main.async {
                 self?.recentlyAdded = albums
+                self?.updateCombinedAlbums()
             }
         }
+    }
+
+    private func loadRecentlyPlayed() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let query = MPMediaQuery.albums()
+
+            guard let collections = query.collections else {
+                DispatchQueue.main.async {
+                    self?.recentlyPlayed = []
+                    self?.updateCombinedAlbums()
+                }
+                return
+            }
+
+            // Sort by last played date (most recent first)
+            let sortedCollections = collections.sorted { collection1, collection2 in
+                let date1 = collection1.items.first?.lastPlayedDate ?? Date.distantPast
+                let date2 = collection2.items.first?.lastPlayedDate ?? Date.distantPast
+                return date1 > date2
+            }.filter { collection in
+                // Only include albums that have been played
+                collection.items.first?.lastPlayedDate != nil
+            }
+
+            // Take first 30 recently played albums
+            let recentAlbums = Array(sortedCollections.prefix(30))
+
+            let albums = recentAlbums.compactMap { collection -> LibraryAlbum? in
+                guard let representativeItem = collection.representativeItem else { return nil }
+
+                return LibraryAlbum(
+                    id: collection.persistentID,
+                    title: representativeItem.albumTitle,
+                    artist: representativeItem.albumArtist ?? representativeItem.artist,
+                    artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                    collection: collection
+                )
+            }
+
+            DispatchQueue.main.async {
+                self?.recentlyPlayed = albums
+                self?.updateCombinedAlbums()
+            }
+        }
+    }
+
+    private func updateCombinedAlbums() {
+        // Combine recently played (priority) + recently added, removing duplicates
+        var seen = Set<UInt64>()
+        var combined: [LibraryAlbum] = []
+
+        // Add recently played first
+        for album in recentlyPlayed {
+            if !seen.contains(album.id) {
+                seen.insert(album.id)
+                combined.append(album)
+            }
+        }
+
+        // Then add recently added
+        for album in recentlyAdded {
+            if !seen.contains(album.id) {
+                seen.insert(album.id)
+                combined.append(album)
+            }
+        }
+
+        // Limit to 50
+        combinedAlbums = Array(combined.prefix(50))
     }
 
     private func loadAllAlbums() {

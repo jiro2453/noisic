@@ -135,7 +135,7 @@ struct LibraryModalView: View {
                 .padding(.bottom, 12)
 
             // アルバムグリッド
-            if libraryManager.recentlyAdded.isEmpty {
+            if libraryManager.combinedAlbums.isEmpty {
                 Spacer()
                 VStack(spacing: 12) {
                     Image(systemName: "music.note.house")
@@ -146,7 +146,7 @@ struct LibraryModalView: View {
                 }
                 Spacer()
             } else {
-                HoneycombGrid(albums: libraryManager.recentlyAdded) { album in
+                HoneycombGrid(albums: libraryManager.combinedAlbums) { album in
                     onAlbumSelected(album)
                     isPresented = false
                 }
