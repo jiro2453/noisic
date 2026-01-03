@@ -13,10 +13,11 @@ struct VideoPlayerView: View {
     let videoName: String
     @State private var player: AVPlayer?
     @State private var observer: NSObjectProtocol?
+    @State private var isReady = false
 
     var body: some View {
         Group {
-            if let player = player {
+            if isReady, let player = player {
                 VideoPlayerLayerView(player: player)
                     .blur(radius: 5)
             } else {
@@ -24,10 +25,8 @@ struct VideoPlayerView: View {
             }
         }
         .onAppear {
-            if player == nil {
-                setupPlayer()
-            }
-            player?.play()
+            print("DEBUG: VideoPlayerView onAppear - videoName: \(videoName)")
+            setupPlayer()
         }
         .onDisappear {
             cleanupPlayer()
@@ -36,9 +35,15 @@ struct VideoPlayerView: View {
     }
 
     private func setupPlayer() {
+        print("DEBUG: setupPlayer started for \(videoName)")
+
         guard let url = Bundle.main.url(forResource: videoName, withExtension: "mp4") else {
+            print("DEBUG: Video file NOT found: \(videoName).mp4")
+            isReady = true  // 動画がなくても画面を表示
             return
         }
+
+        print("DEBUG: Video file found: \(url)")
 
         let playerItem = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: playerItem)
@@ -55,7 +60,9 @@ struct VideoPlayerView: View {
         }
 
         player = newPlayer
+        isReady = true
         newPlayer.play()
+        print("DEBUG: Player setup complete")
     }
 
     private func cleanupPlayer() {
@@ -68,6 +75,7 @@ struct VideoPlayerView: View {
 
         observer = nil
         player = nil
+        isReady = false
     }
 }
 
@@ -76,6 +84,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
     let player: AVPlayer
 
     func makeUIView(context: Context) -> UIView {
+        print("DEBUG: VideoPlayerLayerView makeUIView")
         let view = UIView()
         view.backgroundColor = .black
 
