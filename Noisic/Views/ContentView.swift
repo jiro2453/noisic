@@ -59,41 +59,30 @@ struct ModalTriggerView: View {
     @Binding var showModal: Bool
 
     var body: some View {
-        // モーダルの左上角を表示
         ZStack {
-            // 背景の一部（モーダルのプレビュー）
-            RoundedRectangle(cornerRadius: 24)
-                .fill(Color.black.opacity(0.8))
-                .frame(width: 200, height: 200)
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.15))
+                .frame(width: 100, height: 100)
                 .overlay(
-                    VStack(spacing: 12) {
-                        Image(systemName: "square.grid.2x2")
-                            .font(.system(size: 32))
-                            .foregroundColor(.white.opacity(0.7))
-                        Text("ライブラリ")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
-                        Image(systemName: "arrow.up.left")
-                            .font(.system(size: 16))
-                            .foregroundColor(.white.opacity(0.4))
-                    }
+                    Image(systemName: "chevron.up.left")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.white.opacity(0.5))
+                        .offset(x: -20, y: -20)
                 )
-                .offset(x: 50, y: 50)
+                .offset(x: 60, y: 60)
         }
-        .frame(width: 150, height: 150)
+        .frame(width: 50, height: 50)
         .clipped()
         .offset(dragOffset)
         .gesture(
             DragGesture()
                 .onChanged { value in
-                    // 左上方向へのドラッグのみ許可
                     let newX = min(0, value.translation.width)
                     let newY = min(0, value.translation.height)
                     dragOffset = CGSize(width: newX, height: newY)
                 }
                 .onEnded { value in
-                    // 一定以上ドラッグしたらモーダルを表示
-                    if value.translation.width < -100 || value.translation.height < -100 {
+                    if value.translation.width < -80 || value.translation.height < -80 {
                         showModal = true
                     }
                     withAnimation(.spring()) {
@@ -231,11 +220,14 @@ struct ContentView: View {
         .onAppear {
             audioManager.play(sound: .bonfire)
         }
-        .fullScreenCover(isPresented: $showLibraryModal) {
+        .sheet(isPresented: $showLibraryModal) {
             LibraryModalView(isPresented: $showLibraryModal) { album in
                 libraryManager.playAlbum(album)
             }
             .environmentObject(libraryManager)
+            .presentationDetents([.medium])
+            .presentationDragIndicator(.visible)
+            .presentationBackground(Color.white.opacity(0.9))
         }
     }
 

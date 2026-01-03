@@ -46,12 +46,12 @@ struct HexagonArtwork: View {
                     .clipShape(HexagonShape())
             } else {
                 HexagonShape()
-                    .fill(Color.gray.opacity(0.3))
+                    .fill(Color.black.opacity(0.1))
                     .frame(width: size, height: size)
                     .overlay(
                         Image(systemName: "music.note")
                             .font(.system(size: size * 0.3))
-                            .foregroundColor(.white.opacity(0.4))
+                            .foregroundColor(.black.opacity(0.3))
                     )
             }
         }
@@ -101,50 +101,36 @@ struct LibraryModalView: View {
     let onAlbumSelected: (LibraryAlbum) -> Void
 
     var body: some View {
-        ZStack {
-            // 背景
-            Color.black.opacity(0.9)
-                .ignoresSafeArea()
+        VStack(spacing: 0) {
+            // ヘッダー
+            HStack {
+                Text("ライブラリ")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.black.opacity(0.8))
 
-            VStack(spacing: 0) {
-                // ヘッダー
-                HStack {
-                    Text("ライブラリ")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
+                Spacer()
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
 
-                    Spacer()
-
-                    Button(action: {
-                        isPresented = false
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white.opacity(0.6))
-                    }
+            // アルバムグリッド
+            if libraryManager.recentlyAdded.isEmpty {
+                Spacer()
+                VStack(spacing: 12) {
+                    Image(systemName: "music.note.house")
+                        .font(.system(size: 48))
+                        .foregroundColor(.black.opacity(0.3))
+                    Text("アルバムがありません")
+                        .foregroundColor(.black.opacity(0.5))
+                }
+                Spacer()
+            } else {
+                HoneycombGrid(albums: libraryManager.recentlyAdded) { album in
+                    onAlbumSelected(album)
+                    isPresented = false
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 16)
-
-                // アルバムグリッド
-                if libraryManager.recentlyAdded.isEmpty {
-                    Spacer()
-                    VStack(spacing: 12) {
-                        Image(systemName: "music.note.house")
-                            .font(.system(size: 48))
-                            .foregroundColor(.white.opacity(0.4))
-                        Text("アルバムがありません")
-                            .foregroundColor(.white.opacity(0.6))
-                    }
-                    Spacer()
-                } else {
-                    HoneycombGrid(albums: libraryManager.recentlyAdded) { album in
-                        onAlbumSelected(album)
-                        isPresented = false
-                    }
-                    .padding(.horizontal, 20)
-                }
             }
         }
         .onAppear {
