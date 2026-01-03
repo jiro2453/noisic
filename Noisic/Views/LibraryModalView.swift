@@ -65,20 +65,19 @@ struct HoneycombGrid: View {
 
     var body: some View {
         GeometryReader { geometry in
-            // 6枚が収まるサイズを基準に計算
             let hexSize = geometry.size.width / 4.0
-            // 重ならないようにスペーシングを広めに設定
-            let horizontalSpacing = hexSize * 0.77
-            let verticalSpacing = hexSize * 0.67
+            // 六角形が重ならない正しいスペーシング
+            let horizontalSpacing = hexSize * 0.866
+            let verticalSpacing = hexSize * 0.75
 
-            // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
+            // アルバムを行ごとに分割（奇数行4枚、偶数行5枚）
             let rowData = calculateRows(albums: Array(albums.prefix(50)))
 
             ScrollView {
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(rowData.enumerated()), id: \.offset) { rowIndex, rowAlbums in
                         let isEvenRow = rowIndex % 2 == 1
-                        let itemCount = isEvenRow ? 6 : 5
+                        let itemCount = isEvenRow ? 5 : 4
                         let rowWidth = CGFloat(itemCount - 1) * horizontalSpacing + hexSize
                         let startX = (geometry.size.width - rowWidth) / 2 + hexSize / 2
 
@@ -102,14 +101,14 @@ struct HoneycombGrid: View {
         }
     }
 
-    // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
+    // アルバムを行ごとに分割（奇数行4枚、偶数行5枚）
     private func calculateRows(albums: [LibraryAlbum]) -> [[LibraryAlbum]] {
         var rows: [[LibraryAlbum]] = []
         var currentIndex = 0
         var rowIndex = 0
 
         while currentIndex < albums.count {
-            let itemCount = (rowIndex % 2 == 0) ? 5 : 6
+            let itemCount = (rowIndex % 2 == 0) ? 4 : 5
             let endIndex = min(currentIndex + itemCount, albums.count)
             rows.append(Array(albums[currentIndex..<endIndex]))
             currentIndex = endIndex
