@@ -38,12 +38,14 @@ struct CustomSlider: View {
                 .frame(width: thumbSize, height: thumbSize)
                 .offset(x: thumbOffset - thumbSize / 2)
         }
-        .frame(width: barWidth, height: 44)
+        .frame(width: barWidth + 40, height: 60)
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { gesture in
-                    let newPercentage = min(max(gesture.location.x / barWidth, 0), 1)
+                    // フレームの左右20ptのパディングを考慮
+                    let adjustedX = gesture.location.x - 20
+                    let newPercentage = min(max(adjustedX / barWidth, 0), 1)
                     let newValue = range.lowerBound + Float(newPercentage) * (range.upperBound - range.lowerBound)
                     value = newValue
                 }
