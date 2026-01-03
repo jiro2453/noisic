@@ -218,8 +218,6 @@ struct MusicPlayerView: View {
                         .font(.system(size: 36))
                         .foregroundColor(.white)
                         .frame(width: 60, height: 60)
-                        .background(Color.white.opacity(0.15))
-                        .clipShape(Circle())
                 }
 
                 Button(action: {
