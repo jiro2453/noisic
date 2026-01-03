@@ -65,34 +65,58 @@ struct HoneycombGrid: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let hexSize = geometry.size.width / 4.2
-            // 六角形がぴったり隣り合うスペーシング
+            // 6枚が収まるサイズを基準に計算
+            let hexSize = geometry.size.width / 5.2
             let horizontalSpacing = hexSize * 0.866
             let verticalSpacing = hexSize * 0.75
 
+            // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
+            let rowData = calculateRows(albums: Array(albums.prefix(30)))
+
             ScrollView {
                 ZStack(alignment: .topLeading) {
-                    ForEach(Array(albums.prefix(30).enumerated()), id: \.element.id) { index, album in
-                        let row = index / 5
-                        let col = index % 5
-                        let isOddRow = row % 2 == 1
-                        let xOffset = CGFloat(col) * horizontalSpacing + (isOddRow ? horizontalSpacing / 2 : 0) + hexSize / 2
-                        let yOffset = CGFloat(row) * verticalSpacing + hexSize / 2
+                    ForEach(Array(rowData.enumerated()), id: \.offset) { rowIndex, rowAlbums in
+                        let isEvenRow = rowIndex % 2 == 1 // 0始まりなので偶数インデックスが奇数行
+                        let itemCount = isEvenRow ? 6 : 5
+                        let rowWidth = CGFloat(itemCount - 1) * horizontalSpacing + hexSize
+                        let startX = (geometry.size.width - rowWidth) / 2 + hexSize / 2
 
-                        Button(action: {
-                            onAlbumTap(album)
-                        }) {
-                            HexagonArtwork(artwork: album.artwork, size: hexSize)
+                        ForEach(Array(rowAlbums.enumerated()), id: \.element.id) { colIndex, album in
+                            let xOffset = startX + CGFloat(colIndex) * horizontalSpacing
+                            let yOffset = CGFloat(rowIndex) * verticalSpacing + hexSize / 2
+
+                            Button(action: {
+                                onAlbumTap(album)
+                            }) {
+                                HexagonArtwork(artwork: album.artwork, size: hexSize)
+                            }
+                            .position(x: xOffset, y: yOffset)
                         }
-                        .position(x: xOffset, y: yOffset)
                     }
                 }
                 .frame(
                     width: geometry.size.width,
-                    height: CGFloat((albums.prefix(30).count + 4) / 5) * verticalSpacing + hexSize
+                    height: CGFloat(rowData.count) * verticalSpacing + hexSize
                 )
             }
         }
+    }
+
+    // アルバムを行ごとに分割（奇数行5枚、偶数行6枚）
+    private func calculateRows(albums: [LibraryAlbum]) -> [[LibraryAlbum]] {
+        var rows: [[LibraryAlbum]] = []
+        var currentIndex = 0
+        var rowIndex = 0
+
+        while currentIndex < albums.count {
+            let itemCount = (rowIndex % 2 == 0) ? 5 : 6
+            let endIndex = min(currentIndex + itemCount, albums.count)
+            rows.append(Array(albums[currentIndex..<endIndex]))
+            currentIndex = endIndex
+            rowIndex += 1
+        }
+
+        return rows
     }
 }
 
