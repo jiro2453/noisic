@@ -167,8 +167,8 @@ class LibraryManager: ObservableObject {
             }
         }
 
-        // Limit to 50
-        combinedAlbums = Array(combined.prefix(50))
+        // Limit to 49
+        combinedAlbums = Array(combined.prefix(49))
     }
 
     private func loadAllAlbums() {

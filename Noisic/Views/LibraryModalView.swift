@@ -71,7 +71,7 @@ struct HoneycombGrid: View {
             let verticalSpacing = hexSize * 0.75
 
             // アルバムを行ごとに分割（奇数行4枚、偶数行5枚）
-            let rowData = calculateRows(albums: Array(albums.prefix(50)))
+            let rowData = calculateRows(albums: Array(albums.prefix(49)))
 
             ScrollView {
                 ZStack(alignment: .topLeading) {
