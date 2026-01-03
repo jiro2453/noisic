@@ -107,7 +107,7 @@ struct VinylRecordView: View {
                 .fill(Color.black)
                 .frame(width: 30, height: 30)
         }
-        .onChange(of: isPlaying) { _, playing in
+        .onChange(of: isPlaying) { playing in
             if playing {
                 startRotation()
             } else {
