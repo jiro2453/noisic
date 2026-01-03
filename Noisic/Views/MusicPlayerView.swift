@@ -66,6 +66,82 @@ struct SeekBar: View {
     }
 }
 
+// Rotating vinyl record view
+struct VinylRecordView: View {
+    let artwork: UIImage?
+    let isPlaying: Bool
+
+    @State private var rotationAngle: Double = 0
+    @State private var timer: Timer?
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.black.opacity(0.6))
+                .frame(width: 300, height: 300)
+
+            Circle()
+                .fill(Color.black.opacity(0.7))
+                .frame(width: 250, height: 250)
+
+            if let artwork = artwork {
+                Image(uiImage: artwork)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 230, height: 230)
+                    .clipShape(Circle())
+                    .rotationEffect(.degrees(rotationAngle))
+            } else {
+                Circle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 230, height: 230)
+                    .overlay(
+                        Image(systemName: "music.note")
+                            .font(.system(size: 60))
+                            .foregroundColor(.white.opacity(0.4))
+                    )
+                    .rotationEffect(.degrees(rotationAngle))
+            }
+
+            Circle()
+                .fill(Color.black)
+                .frame(width: 30, height: 30)
+        }
+        .onChange(of: isPlaying) { _, playing in
+            if playing {
+                startRotation()
+            } else {
+                stopRotation()
+            }
+        }
+        .onAppear {
+            if isPlaying {
+                startRotation()
+            }
+        }
+        .onDisappear {
+            stopRotation()
+        }
+    }
+
+    private func startRotation() {
+        // 既にタイマーが動いている場合は何もしない
+        guard timer == nil else { return }
+
+        // 60fpsで回転（1回転8秒 = 45度/秒 = 0.75度/フレーム）
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0/60.0, repeats: true) { _ in
+            withAnimation(.linear(duration: 1.0/60.0)) {
+                rotationAngle += 0.75
+            }
+        }
+    }
+
+    private func stopRotation() {
+        timer?.invalidate()
+        timer = nil
+    }
+}
+
 struct MusicPlayerView: View {
     @EnvironmentObject var musicInfoReader: MusicInfoReader
     @State private var isSeeking = false
@@ -74,36 +150,10 @@ struct MusicPlayerView: View {
     var body: some View {
         VStack(spacing: 16) {
             // Album Artwork / Vinyl Record
-            ZStack {
-                Circle()
-                    .fill(Color.black.opacity(0.6))
-                    .frame(width: 300, height: 300)
-
-                Circle()
-                    .fill(Color.black.opacity(0.7))
-                    .frame(width: 250, height: 250)
-
-                if let artwork = musicInfoReader.musicInfo.artwork {
-                    Image(uiImage: artwork)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 230, height: 230)
-                        .clipShape(Circle())
-                } else {
-                    Circle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(width: 230, height: 230)
-                        .overlay(
-                            Image(systemName: "music.note")
-                                .font(.system(size: 60))
-                                .foregroundColor(.white.opacity(0.4))
-                        )
-                }
-
-                Circle()
-                    .fill(Color.black)
-                    .frame(width: 30, height: 30)
-            }
+            VinylRecordView(
+                artwork: musicInfoReader.musicInfo.artwork,
+                isPlaying: musicInfoReader.isPlaying
+            )
 
             // Song Info
             VStack(spacing: 4) {

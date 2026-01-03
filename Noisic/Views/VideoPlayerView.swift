@@ -14,6 +14,7 @@ struct VideoPlayerView: View {
 
     var body: some View {
         VideoPlayerContainer(videoName: videoName)
+            .blur(radius: 5)
             .ignoresSafeArea()
     }
 }
@@ -78,14 +79,6 @@ class VideoPlayerViewController: UIViewController {
             layer.frame = self.view.bounds
             self.view.layer.addSublayer(layer)
             self.playerLayer = layer
-
-            // ブラー効果を追加
-            let blurEffect = UIBlurEffect(style: .regular)
-            let blurView = UIVisualEffectView(effect: blurEffect)
-            blurView.frame = self.view.bounds
-            blurView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-            blurView.alpha = 0.3
-            self.view.addSubview(blurView)
 
             // ループ再生
             self.observer = NotificationCenter.default.addObserver(
