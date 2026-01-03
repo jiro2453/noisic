@@ -61,15 +61,15 @@ struct HexagonArtwork: View {
 // ハニカムグリッドレイアウト
 struct HoneycombGrid: View {
     let albums: [LibraryAlbum]
-    let hexSize: CGFloat = 72
     let onAlbumTap: (LibraryAlbum) -> Void
 
     var body: some View {
-        // 余白なしで隣り合うように配置
-        let horizontalSpacing = hexSize * 0.75
-        let verticalSpacing = hexSize * 0.866
-
         GeometryReader { geometry in
+            let hexSize = geometry.size.width / 4.2
+            // 六角形がぴったり隣り合うスペーシング
+            let horizontalSpacing = hexSize * 0.866
+            let verticalSpacing = hexSize * 0.75
+
             ScrollView {
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(albums.prefix(30).enumerated()), id: \.element.id) { index, album in
@@ -127,7 +127,6 @@ struct LibraryModalView: View {
                     onAlbumSelected(album)
                     isPresented = false
                 }
-                .padding(.horizontal, 10)
             }
         }
         .onAppear {

@@ -266,7 +266,6 @@ struct MusicPlayerView: View {
                             .stroke(Color.white.opacity(0.6), lineWidth: 3)
                             .frame(width: 32, height: 32)
                     }
-                    .padding(.trailing, 20)
                 }
             }
             .frame(maxWidth: .infinity)
