@@ -227,46 +227,48 @@ struct MusicPlayerView: View {
             }
 
             // Playback Controls
-            HStack(spacing: 32) {
-                Button(action: {
-                    musicInfoReader.skipToPrevious()
-                }) {
-                    Image(systemName: "backward.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.8))
+            ZStack {
+                // 中央の再生コントロール
+                HStack(spacing: 40) {
+                    Button(action: {
+                        musicInfoReader.skipToPrevious()
+                    }) {
+                        Image(systemName: "backward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+
+                    Button(action: {
+                        musicInfoReader.playPause()
+                    }) {
+                        Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
+                            .font(.system(size: 36))
+                            .foregroundColor(.white)
+                            .frame(width: 60, height: 60)
+                    }
+
+                    Button(action: {
+                        musicInfoReader.skipToNext()
+                    }) {
+                        Image(systemName: "forward.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
                 }
 
-                Button(action: {
-                    musicInfoReader.playPause()
-                }) {
-                    Image(systemName: musicInfoReader.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.system(size: 36))
-                        .foregroundColor(.white)
-                        .frame(width: 60, height: 60)
-                }
-
-                Button(action: {
-                    musicInfoReader.skipToNext()
-                }) {
-                    Image(systemName: "forward.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.8))
-                }
-
-                // Library Button (Hexagon)
-                Button(action: {
-                    showLibraryModal = true
-                }) {
-                    HexagonButtonShape()
-                        .stroke(Color.white.opacity(0.6), lineWidth: 2)
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            Image(systemName: "music.note.list")
-                                .font(.system(size: 12))
-                                .foregroundColor(.white.opacity(0.8))
-                        )
+                // 右側の六角形ボタン
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        showLibraryModal = true
+                    }) {
+                        HexagonButtonShape()
+                            .stroke(Color.white.opacity(0.6), lineWidth: 3)
+                            .frame(width: 32, height: 32)
+                    }
                 }
             }
+            .frame(width: 280)
             .padding(.top, 8)
         }
         .padding(.horizontal, 20)
