@@ -55,10 +55,12 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            // ビデオ背景
-            VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
+            // ビデオ背景（一時的に無効化）
+            Color.black
                 .ignoresSafeArea()
-                .id(actualIndex)
+            // VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
+            //     .ignoresSafeArea()
+            //     .id(actualIndex)
 
             // グラデーションオーバーレイ
             LinearGradient(
