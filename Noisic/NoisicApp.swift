@@ -24,6 +24,10 @@ struct NoisicApp: App {
                 .environmentObject(audioManager)
                 .environmentObject(musicInfoReader)
                 .environmentObject(libraryManager)
+                .onAppear {
+                    // MusicInfoReaderにLibraryManagerを設定
+                    musicInfoReader.libraryManager = libraryManager
+                }
         }
     }
 }

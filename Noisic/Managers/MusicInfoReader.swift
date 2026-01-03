@@ -18,6 +18,7 @@ class MusicInfoReader: ObservableObject {
     private var timer: Timer?
     private var player: MPMusicPlayerController?
     private var isSetup = false
+    weak var libraryManager: LibraryManager?
 
     init() {
         // Delay initialization to avoid blocking app launch
@@ -57,6 +58,8 @@ class MusicInfoReader: ObservableObject {
 
         player = MPMusicPlayerController.systemMusicPlayer
         player?.beginGeneratingPlaybackNotifications()
+        // アルバム内で自動ループ
+        player?.repeatMode = .all
         isAuthorized = true
         startMonitoring()
     }
@@ -153,9 +156,43 @@ class MusicInfoReader: ObservableObject {
     }
 
     func skipToNext() {
-        player?.skipToNextItem()
+        guard let player = player, let nowPlaying = player.nowPlayingItem else {
+            player?.skipToNextItem()
+            return
+        }
+
+        let trackNumber = nowPlaying.albumTrackNumber
+        let trackCount = nowPlaying.albumTrackCount
+
+        // 最後の曲または1曲のみの場合は次のアルバムを再生
+        if trackCount <= 1 || trackNumber >= trackCount {
+            playNextAlbum()
+        } else {
+            player.skipToNextItem()
+        }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
+        }
+    }
+
+    private func playNextAlbum() {
+        guard let libraryManager = libraryManager,
+              let player = player,
+              let currentItem = player.nowPlayingItem else { return }
+
+        let currentAlbumId = currentItem.albumPersistentID
+        let albums = libraryManager.combinedAlbums
+
+        // 現在のアルバムのインデックスを見つける
+        if let currentIndex = albums.firstIndex(where: { $0.id == currentAlbumId }) {
+            // 次のアルバムを取得（ループ）
+            let nextIndex = (currentIndex + 1) % albums.count
+            let nextAlbum = albums[nextIndex]
+            libraryManager.playAlbum(nextAlbum)
+        } else if let firstAlbum = albums.first {
+            // 見つからない場合は最初のアルバムを再生
+            libraryManager.playAlbum(firstAlbum)
         }
     }
 
