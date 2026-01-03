@@ -61,20 +61,20 @@ struct HexagonArtwork: View {
 // ハニカムグリッドレイアウト
 struct HoneycombGrid: View {
     let albums: [LibraryAlbum]
-    let hexSize: CGFloat = 100
+    let hexSize: CGFloat = 72
     let onAlbumTap: (LibraryAlbum) -> Void
 
     var body: some View {
-        // 重ならないようにスペーシングを調整
-        let horizontalSpacing = hexSize * 0.9
-        let verticalSpacing = hexSize * 0.85
+        // 余白なしで隣り合うように配置
+        let horizontalSpacing = hexSize * 0.75
+        let verticalSpacing = hexSize * 0.866
 
         GeometryReader { geometry in
             ScrollView {
                 ZStack(alignment: .topLeading) {
                     ForEach(Array(albums.prefix(30).enumerated()), id: \.element.id) { index, album in
-                        let row = index / 4
-                        let col = index % 4
+                        let row = index / 5
+                        let col = index % 5
                         let isOddRow = row % 2 == 1
                         let xOffset = CGFloat(col) * horizontalSpacing + (isOddRow ? horizontalSpacing / 2 : 0) + hexSize / 2
                         let yOffset = CGFloat(row) * verticalSpacing + hexSize / 2
@@ -89,7 +89,7 @@ struct HoneycombGrid: View {
                 }
                 .frame(
                     width: geometry.size.width,
-                    height: CGFloat((albums.prefix(30).count + 3) / 4) * verticalSpacing + hexSize
+                    height: CGFloat((albums.prefix(30).count + 4) / 5) * verticalSpacing + hexSize
                 )
             }
         }
