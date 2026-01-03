@@ -43,6 +43,7 @@ struct CustomSlider: View {
 
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
+    @EnvironmentObject var musicInfoReader: MusicInfoReader
     @State private var currentIndex = 11
 
     private var extendedSounds: [AmbientSound] {
@@ -122,9 +123,12 @@ struct ContentView: View {
                 .padding(.top, 50)
 
                 Spacer()
+
+                // Music Player
+                MusicPlayerView()
+                    .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
