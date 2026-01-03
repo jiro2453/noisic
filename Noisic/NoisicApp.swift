@@ -14,10 +14,8 @@ struct NoisicApp: App {
     // @StateObject private var libraryManager = LibraryManager() // 一時的に無効化
 
     init() {
-        print("DEBUG: NoisicApp init started")
         // Configure audio session for ambient sound playback with other apps
         AudioSessionManager.shared.configure()
-        print("DEBUG: NoisicApp init completed")
     }
 
     var body: some Scene {

@@ -23,7 +23,6 @@ struct VideoPlayerContainer: UIViewControllerRepresentable {
     let videoName: String
 
     func makeUIViewController(context: Context) -> VideoPlayerViewController {
-        print("DEBUG: VideoPlayerContainer makeUIViewController")
         return VideoPlayerViewController(videoName: videoName)
     }
 
@@ -44,7 +43,6 @@ class VideoPlayerViewController: UIViewController {
     init(videoName: String) {
         self.currentVideoName = videoName
         super.init(nibName: nil, bundle: nil)
-        print("DEBUG: VideoPlayerViewController init - \(videoName)")
     }
 
     required init?(coder: NSCoder) {
@@ -53,7 +51,6 @@ class VideoPlayerViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("DEBUG: VideoPlayerViewController viewDidLoad")
         view.backgroundColor = .black
 
         // バックグラウンドスレッドで動画を読み込む
@@ -64,11 +61,8 @@ class VideoPlayerViewController: UIViewController {
 
     private func loadVideoAsync() {
         guard let url = Bundle.main.url(forResource: currentVideoName, withExtension: "mp4") else {
-            print("DEBUG: Video file NOT found: \(currentVideoName).mp4")
             return
         }
-
-        print("DEBUG: Video file found: \(url)")
 
         let playerItem = AVPlayerItem(url: url)
         let newPlayer = AVPlayer(playerItem: playerItem)
@@ -104,7 +98,6 @@ class VideoPlayerViewController: UIViewController {
             }
 
             newPlayer.play()
-            print("DEBUG: Video playing")
         }
     }
 
@@ -138,6 +131,5 @@ class VideoPlayerViewController: UIViewController {
 
     deinit {
         cleanup()
-        print("DEBUG: VideoPlayerViewController deinit")
     }
 }
