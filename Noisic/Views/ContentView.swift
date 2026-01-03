@@ -7,6 +7,26 @@
 
 import SwiftUI
 
+// iOS 16+ ハーフモーダル対応
+struct HalfModalModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(Color.white.opacity(0.9))
+        } else if #available(iOS 16.0, *) {
+            content
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .background(Color.white.opacity(0.9))
+        } else {
+            content
+                .background(Color.white.opacity(0.9))
+        }
+    }
+}
+
 // Custom Slider with full-width track (Float version)
 struct CustomSlider: View {
     @Binding var value: Float
@@ -225,9 +245,7 @@ struct ContentView: View {
                 libraryManager.playAlbum(album)
             }
             .environmentObject(libraryManager)
-            .presentationDetents([.medium])
-            .presentationDragIndicator(.visible)
-            .presentationBackground(Color.white.opacity(0.9))
+            .modifier(HalfModalModifier())
         }
     }
 
