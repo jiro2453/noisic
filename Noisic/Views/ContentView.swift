@@ -13,16 +13,17 @@ struct CustomSlider: View {
     let range: ClosedRange<Float>
     let trackHeight: CGFloat = 4
     let thumbSize: CGFloat = 20
+    let barWidth: CGFloat = 180
 
     var body: some View {
         let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
-        let thumbOffset = percentage * 180 // Fixed width
+        let thumbOffset = percentage * barWidth
 
         ZStack(alignment: .leading) {
             // Background track
             Rectangle()
                 .fill(Color.white.opacity(0.2))
-                .frame(width: 180, height: trackHeight)
+                .frame(width: barWidth, height: trackHeight)
                 .cornerRadius(trackHeight / 2)
 
             // Active track
@@ -37,7 +38,16 @@ struct CustomSlider: View {
                 .frame(width: thumbSize, height: thumbSize)
                 .offset(x: thumbOffset - thumbSize / 2)
         }
-        .frame(width: 180, height: 44)
+        .frame(width: barWidth, height: 44)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { gesture in
+                    let newPercentage = min(max(gesture.location.x / barWidth, 0), 1)
+                    let newValue = range.lowerBound + Float(newPercentage) * (range.upperBound - range.lowerBound)
+                    value = newValue
+                }
+        )
     }
 }
 
