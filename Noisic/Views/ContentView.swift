@@ -80,18 +80,18 @@ struct ModalTriggerView: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.15))
-                .frame(width: 100, height: 100)
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.white.opacity(0.2))
+                .frame(width: 120, height: 120)
                 .overlay(
                     Image(systemName: "chevron.up.left")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white.opacity(0.5))
-                        .offset(x: -20, y: -20)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white.opacity(0.6))
+                        .offset(x: -25, y: -25)
                 )
-                .offset(x: 60, y: 60)
+                .offset(x: 35, y: 35)
         }
-        .frame(width: 50, height: 50)
+        .frame(width: 70, height: 70)
         .clipped()
         .offset(dragOffset)
         .gesture(
