@@ -24,7 +24,7 @@ class MusicInfoReader: ObservableObject {
     private var cachedArtwork: UIImage?
     private var cachedArtworkId: UInt64 = 0
     private var artworkRetryCount = 0
-    private let maxArtworkRetries = 5
+    private let maxArtworkRetries = 10
 
     init() {
         // Delay initialization to avoid blocking app launch
@@ -67,10 +67,28 @@ class MusicInfoReader: ObservableObject {
         // アルバム内で自動ループ
         player?.repeatMode = .all
         isAuthorized = true
+
+        // 曲が変わった時の通知を監視
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(nowPlayingItemDidChange),
+            name: .MPMusicPlayerControllerNowPlayingItemDidChange,
+            object: player
+        )
+
         startMonitoring()
     }
 
+    @objc private func nowPlayingItemDidChange() {
+        // 曲が変わったらキャッシュをリセットして即座に更新
+        cachedArtwork = nil
+        cachedArtworkId = 0
+        artworkRetryCount = 0
+        updateMusicInfo()
+    }
+
     deinit {
+        NotificationCenter.default.removeObserver(self)
         player?.endGeneratingPlaybackNotifications()
         stopMonitoring()
     }
@@ -119,36 +137,56 @@ class MusicInfoReader: ObservableObject {
                 return cached
             }
 
-            guard let artworkCatalog = nowPlaying.artwork else {
-                // リトライカウントを増やしてあとで再試行
-                if artworkRetryCount < maxArtworkRetries {
-                    artworkRetryCount += 1
-                    scheduleArtworkRetry()
+            // 方法1: nowPlayingItemから直接取得
+            if let artworkCatalog = nowPlaying.artwork {
+                let sizes = [
+                    CGSize(width: 600, height: 600),
+                    CGSize(width: 300, height: 300),
+                    CGSize(width: 200, height: 200),
+                    CGSize(width: 100, height: 100)
+                ]
+
+                for size in sizes {
+                    if let image = artworkCatalog.image(at: size) {
+                        cachedArtwork = image
+                        return image
+                    }
                 }
-                return nil
+
+                // Fallback to bounds size
+                let boundsSize = artworkCatalog.bounds.size
+                if boundsSize.width > 0 && boundsSize.height > 0 {
+                    if let image = artworkCatalog.image(at: boundsSize) {
+                        cachedArtwork = image
+                        return image
+                    }
+                }
             }
 
-            // Try different sizes in order of preference
-            let sizes = [
-                CGSize(width: 600, height: 600),
-                CGSize(width: 300, height: 300),
-                CGSize(width: 200, height: 200),
-                CGSize(width: 100, height: 100)
-            ]
-
-            for size in sizes {
-                if let image = artworkCatalog.image(at: size) {
-                    cachedArtwork = image
-                    return image
-                }
+            // 方法2: LibraryManagerからアルバムのアートワークを取得
+            let albumId = nowPlaying.albumPersistentID
+            if let libraryManager = libraryManager,
+               let album = libraryManager.combinedAlbums.first(where: { $0.id == albumId }),
+               let albumArtwork = album.artwork {
+                cachedArtwork = albumArtwork
+                return albumArtwork
             }
 
-            // Fallback to bounds size
-            let boundsSize = artworkCatalog.bounds.size
-            if boundsSize.width > 0 && boundsSize.height > 0 {
-                if let image = artworkCatalog.image(at: boundsSize) {
-                    cachedArtwork = image
-                    return image
+            // 方法3: アルバムのrepresentativeItemから取得を試みる
+            let query = MPMediaQuery.albums()
+            query.addFilterPredicate(MPMediaPropertyPredicate(
+                value: albumId,
+                forProperty: MPMediaItemPropertyAlbumPersistentID
+            ))
+            if let collection = query.collections?.first,
+               let repItem = collection.representativeItem,
+               let repArtwork = repItem.artwork {
+                let sizes = [CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
+                for size in sizes {
+                    if let image = repArtwork.image(at: size) {
+                        cachedArtwork = image
+                        return image
+                    }
                 }
             }
 
@@ -174,8 +212,9 @@ class MusicInfoReader: ObservableObject {
     }
 
     private func scheduleArtworkRetry() {
-        // 0.3秒後にリトライ
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+        // リトライ回数に応じて待機時間を増やす（0.2秒、0.4秒、0.6秒...）
+        let delay = 0.2 * Double(artworkRetryCount)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.updateMusicInfo()
         }
     }
