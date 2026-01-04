@@ -28,7 +28,6 @@ class MusicInfoReader: ObservableObject {
 
     // 最後に成功したアートワーク（フォールバック用）
     private var lastSuccessfulArtwork: UIImage?
-    private var isLoadingArtwork = false
 
     init() {
         // Delay initialization to avoid blocking app launch
@@ -113,178 +112,158 @@ class MusicInfoReader: ObservableObject {
     }
 
     private func updateMusicInfo() {
-        guard let player = player, let nowPlaying = player.nowPlayingItem else {
-            DispatchQueue.main.async {
-                self.musicInfo = MusicInfo(title: nil, artist: nil, artwork: nil, isPlaying: false)
-                self.isPlaying = false
-                self.currentTime = 0
-                self.duration = 0
+        // 必ずメインスレッドで実行
+        if !Thread.isMainThread {
+            DispatchQueue.main.async { [weak self] in
+                self?.updateMusicInfo()
             }
+            return
+        }
+
+        guard let player = player, let nowPlaying = player.nowPlayingItem else {
+            self.musicInfo = MusicInfo(title: nil, artist: nil, artwork: nil, isPlaying: false)
+            self.isPlaying = false
+            self.currentTime = 0
+            self.duration = 0
             return
         }
 
         let title = nowPlaying.title
         let artist = nowPlaying.artist
         let itemId = nowPlaying.persistentID
-        let albumId = nowPlaying.albumPersistentID
 
         // 曲が変わった場合はキャッシュをリセット
         if itemId != cachedArtworkId {
             cachedArtworkId = itemId
             cachedArtwork = nil
             artworkRetryCount = 0
-            isLoadingArtwork = false
         }
 
         let playing = player.playbackState == .playing
         let time = player.currentPlaybackTime
         let trackDuration = nowPlaying.playbackDuration
 
-        // まずキャッシュがあればそれを使用
+        // キャッシュがあればそれを使用
         if let cached = cachedArtwork {
-            DispatchQueue.main.async {
-                self.musicInfo = MusicInfo(title: title, artist: artist, artwork: cached, isPlaying: playing)
-                self.isPlaying = playing
-                self.currentTime = time
-                self.duration = trackDuration
-            }
-            return
-        }
-
-        // アートワークをバックグラウンドで取得
-        if !isLoadingArtwork {
-            isLoadingArtwork = true
-            loadArtworkAsync(for: nowPlaying, albumId: albumId, title: title, artist: artist)
-        }
-
-        // 一時的に最後のアートワークか nil を使用
-        let tempArtwork = lastSuccessfulArtwork
-        DispatchQueue.main.async {
-            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: tempArtwork, isPlaying: playing)
+            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: cached, isPlaying: playing)
             self.isPlaying = playing
             self.currentTime = time
             self.duration = trackDuration
+            return
         }
+
+        // アートワークを同期的に取得（メインスレッド上）
+        let artwork = fetchArtwork(for: nowPlaying)
+
+        if let artwork = artwork {
+            cachedArtwork = artwork
+            lastSuccessfulArtwork = artwork
+            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
+        } else {
+            // アートワークが取得できなかった場合、前回のアートワークを使用してリトライ
+            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: lastSuccessfulArtwork, isPlaying: playing)
+
+            if artworkRetryCount < maxArtworkRetries {
+                artworkRetryCount += 1
+                scheduleArtworkRetry()
+            }
+        }
+
+        self.isPlaying = playing
+        self.currentTime = time
+        self.duration = trackDuration
     }
 
-    private func loadArtworkAsync(for item: MPMediaItem, albumId: UInt64, title: String?, artist: String?) {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+    /// メインスレッドでアートワークを取得
+    private func fetchArtwork(for item: MPMediaItem) -> UIImage? {
+        // 方法1: MPMediaItemから直接取得
+        if let artworkCatalog = item.artwork {
+            let sizes = [
+                CGSize(width: 600, height: 600),
+                CGSize(width: 400, height: 400),
+                CGSize(width: 300, height: 300),
+                CGSize(width: 200, height: 200),
+                CGSize(width: 100, height: 100)
+            ]
 
-            var artwork: UIImage?
+            for size in sizes {
+                if let image = artworkCatalog.image(at: size) {
+                    return image
+                }
+            }
 
-            // 方法1: MPMediaItemから直接取得
-            if let artworkCatalog = item.artwork {
-                let sizes = [
-                    CGSize(width: 600, height: 600),
-                    CGSize(width: 400, height: 400),
-                    CGSize(width: 300, height: 300),
-                    CGSize(width: 200, height: 200),
-                    CGSize(width: 100, height: 100)
-                ]
+            // Fallback to bounds size
+            let boundsSize = artworkCatalog.bounds.size
+            if boundsSize.width > 0 && boundsSize.height > 0 {
+                if let image = artworkCatalog.image(at: boundsSize) {
+                    return image
+                }
+            }
+        }
 
+        // 方法2: アルバムクエリから取得
+        let albumId = item.albumPersistentID
+        let query = MPMediaQuery.albums()
+        query.addFilterPredicate(MPMediaPropertyPredicate(
+            value: albumId,
+            forProperty: MPMediaItemPropertyAlbumPersistentID
+        ))
+
+        if let collection = query.collections?.first {
+            // 代表曲から取得
+            if let repItem = collection.representativeItem,
+               let repArtwork = repItem.artwork {
+                let sizes = [CGSize(width: 400, height: 400), CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
                 for size in sizes {
-                    if let image = artworkCatalog.image(at: size) {
-                        artwork = image
-                        break
-                    }
-                }
-
-                // Fallback to bounds size
-                if artwork == nil {
-                    let boundsSize = artworkCatalog.bounds.size
-                    if boundsSize.width > 0 && boundsSize.height > 0 {
-                        artwork = artworkCatalog.image(at: boundsSize)
+                    if let image = repArtwork.image(at: size) {
+                        return image
                     }
                 }
             }
 
-            // 方法2: アルバムのrepresentativeItemから取得
-            if artwork == nil {
-                let query = MPMediaQuery.albums()
-                query.addFilterPredicate(MPMediaPropertyPredicate(
-                    value: albumId,
-                    forProperty: MPMediaItemPropertyAlbumPersistentID
-                ))
-                if let collection = query.collections?.first,
-                   let repItem = collection.representativeItem,
-                   let repArtwork = repItem.artwork {
-                    let sizes = [CGSize(width: 400, height: 400), CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
+            // アルバム内の全曲をチェック
+            for trackItem in collection.items {
+                if let trackArtwork = trackItem.artwork {
+                    let sizes = [CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
                     for size in sizes {
-                        if let image = repArtwork.image(at: size) {
-                            artwork = image
-                            break
+                        if let image = trackArtwork.image(at: size) {
+                            return image
                         }
-                    }
-                }
-            }
-
-            // 方法3: アルバム内の全曲をチェック
-            if artwork == nil {
-                let query = MPMediaQuery.albums()
-                query.addFilterPredicate(MPMediaPropertyPredicate(
-                    value: albumId,
-                    forProperty: MPMediaItemPropertyAlbumPersistentID
-                ))
-                if let collection = query.collections?.first {
-                    for trackItem in collection.items {
-                        if let trackArtwork = trackItem.artwork {
-                            let sizes = [CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
-                            for size in sizes {
-                                if let image = trackArtwork.image(at: size) {
-                                    artwork = image
-                                    break
-                                }
-                            }
-                            if artwork != nil { break }
-                        }
-                    }
-                }
-            }
-
-            // 方法4: LibraryManagerから取得
-            if artwork == nil {
-                DispatchQueue.main.sync {
-                    if let libraryManager = self.libraryManager,
-                       let album = libraryManager.combinedAlbums.first(where: { $0.id == albumId }),
-                       let albumArtwork = album.artwork {
-                        artwork = albumArtwork
-                    }
-                }
-            }
-
-            DispatchQueue.main.async {
-                if let artwork = artwork {
-                    self.cachedArtwork = artwork
-                    self.lastSuccessfulArtwork = artwork
-                    self.isLoadingArtwork = false
-
-                    // 現在再生中の曲と一致する場合のみ更新
-                    if let currentItem = self.player?.nowPlayingItem,
-                       currentItem.persistentID == item.persistentID {
-                        let playing = (self.player?.playbackState == .playing)
-                        let time = self.player?.currentPlaybackTime ?? 0
-                        let duration = currentItem.playbackDuration
-                        self.musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
-                        self.isPlaying = playing
-                        self.currentTime = time
-                        self.duration = duration
-                    }
-                } else {
-                    // アートワークが見つからなかった場合はリトライ
-                    self.isLoadingArtwork = false
-                    if self.artworkRetryCount < self.maxArtworkRetries {
-                        self.artworkRetryCount += 1
-                        self.scheduleArtworkRetry()
                     }
                 }
             }
         }
+
+        // 方法3: LibraryManagerから取得
+        if let libraryManager = libraryManager,
+           let album = libraryManager.combinedAlbums.first(where: { $0.id == albumId }),
+           let albumArtwork = album.artwork {
+            return albumArtwork
+        }
+
+        // 方法4: 全曲クエリから取得
+        let songsQuery = MPMediaQuery.songs()
+        songsQuery.addFilterPredicate(MPMediaPropertyPredicate(
+            value: item.persistentID,
+            forProperty: MPMediaItemPropertyPersistentID
+        ))
+
+        if let foundItem = songsQuery.items?.first,
+           let foundArtwork = foundItem.artwork {
+            let sizes = [CGSize(width: 300, height: 300), CGSize(width: 200, height: 200)]
+            for size in sizes {
+                if let image = foundArtwork.image(at: size) {
+                    return image
+                }
+            }
+        }
+
+        return nil
     }
 
     private func scheduleArtworkRetry() {
-        // リトライ回数に応じて待機時間を増やす（0.3秒、0.6秒、0.9秒...最大3秒）
-        let delay = min(0.3 * Double(artworkRetryCount), 3.0)
+        // リトライ回数に応じて待機時間を増やす（0.5秒、1秒、1.5秒...最大3秒）
+        let delay = min(0.5 * Double(artworkRetryCount), 3.0)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             self?.updateMusicInfo()
         }
