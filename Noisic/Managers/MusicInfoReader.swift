@@ -26,8 +26,9 @@ class MusicInfoReader: ObservableObject {
     private var artworkRetryCount = 0
     private let maxArtworkRetries = 20
 
-    // 最後に成功したアートワーク（フォールバック用）
+    // 最後に成功したアートワーク（同じ曲のリトライ用）
     private var lastSuccessfulArtwork: UIImage?
+    private var lastSuccessfulArtworkId: UInt64 = 0
 
     init() {
         // Delay initialization to avoid blocking app launch
@@ -137,8 +138,8 @@ class MusicInfoReader: ObservableObject {
         // Update immediately
         updateMusicInfo()
 
-        // Poll for updates every 1 second (reduced from 0.5 for better performance)
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        // Poll for updates every 0.5 second
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             self?.updateMusicInfo()
         }
     }
@@ -195,10 +196,13 @@ class MusicInfoReader: ObservableObject {
         if let artwork = artwork {
             cachedArtwork = artwork
             lastSuccessfulArtwork = artwork
+            lastSuccessfulArtworkId = itemId
             self.musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
         } else {
-            // アートワークが取得できなかった場合、前回のアートワークを使用してリトライ
-            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: lastSuccessfulArtwork, isPlaying: playing)
+            // アートワークが取得できなかった場合
+            // 同じ曲のリトライ中のみ前回のアートワークを使用（違う曲の場合はnil）
+            let fallbackArtwork = (lastSuccessfulArtworkId == itemId) ? lastSuccessfulArtwork : nil
+            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: fallbackArtwork, isPlaying: playing)
 
             if artworkRetryCount < maxArtworkRetries {
                 artworkRetryCount += 1
