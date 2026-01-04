@@ -154,26 +154,57 @@ class MusicInfoReader: ObservableObject {
         // アートワークを取得
         var artwork: UIImage? = nil
 
-        // 方法1: value(forProperty:)を使用
-        if let mpArtwork = nowPlaying.value(forProperty: MPMediaItemPropertyArtwork) as? MPMediaItemArtwork {
-            artwork = mpArtwork.image(at: CGSize(width: 300, height: 300))
+        // デバッグ: アートワークの状態を確認
+        let hasArtworkProperty = nowPlaying.artwork != nil
+        let artworkBounds = nowPlaying.artwork?.bounds ?? .zero
+        print("🎵 Title: \(title ?? "nil"), Artist: \(artist ?? "nil")")
+        print("🖼️ hasArtwork: \(hasArtworkProperty), bounds: \(artworkBounds)")
+
+        // 方法1: 直接プロパティから取得
+        if let directArtwork = nowPlaying.artwork {
+            // 複数のサイズを試す
+            let sizes: [CGSize] = [
+                artworkBounds.size,
+                CGSize(width: 600, height: 600),
+                CGSize(width: 300, height: 300),
+                CGSize(width: 200, height: 200),
+                CGSize(width: 100, height: 100),
+                CGSize(width: 50, height: 50)
+            ]
+            for size in sizes {
+                if size.width > 0, let img = directArtwork.image(at: size) {
+                    artwork = img
+                    print("✅ Artwork loaded at size: \(size)")
+                    break
+                }
+            }
+            if artwork == nil {
+                print("❌ Failed to get image from artwork at any size")
+            }
+        } else {
+            print("❌ nowPlaying.artwork is nil")
         }
 
-        // 方法2: 直接プロパティから取得
-        if artwork == nil, let directArtwork = nowPlaying.artwork {
-            artwork = directArtwork.image(at: CGSize(width: 300, height: 300))
-        }
-
-        // 方法3: persistentIDで新しくクエリして取得
+        // 方法2: persistentIDで新しくクエリして取得
         if artwork == nil {
             let query = MPMediaQuery.songs()
             query.addFilterPredicate(MPMediaPropertyPredicate(
                 value: nowPlaying.persistentID,
                 forProperty: MPMediaItemPropertyPersistentID
             ))
-            if let freshItem = query.items?.first,
-               let freshArtwork = freshItem.artwork {
-                artwork = freshArtwork.image(at: CGSize(width: 300, height: 300))
+            if let freshItem = query.items?.first {
+                print("🔍 Query found item: \(freshItem.title ?? "nil")")
+                if let freshArtwork = freshItem.artwork {
+                    print("🔍 Query item has artwork, bounds: \(freshArtwork.bounds)")
+                    if let img = freshArtwork.image(at: CGSize(width: 300, height: 300)) {
+                        artwork = img
+                        print("✅ Artwork loaded from query")
+                    }
+                } else {
+                    print("❌ Query item artwork is nil")
+                }
+            } else {
+                print("❌ Query returned no items")
             }
         }
 
