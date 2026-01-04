@@ -20,6 +20,12 @@ class MusicInfoReader: ObservableObject {
     private var isSetup = false
     weak var libraryManager: LibraryManager?
 
+    // アートワークのキャッシュ
+    private var cachedArtwork: UIImage?
+    private var cachedArtworkId: UInt64 = 0
+    private var artworkRetryCount = 0
+    private let maxArtworkRetries = 5
+
     init() {
         // Delay initialization to avoid blocking app launch
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
@@ -97,10 +103,30 @@ class MusicInfoReader: ObservableObject {
 
         let title = nowPlaying.title
         let artist = nowPlaying.artist
+        let itemId = nowPlaying.persistentID
 
-        // Try multiple sizes to ensure artwork is retrieved
+        // 曲が変わった場合はキャッシュをリセット
+        if itemId != cachedArtworkId {
+            cachedArtworkId = itemId
+            cachedArtwork = nil
+            artworkRetryCount = 0
+        }
+
+        // アートワークを取得（キャッシュがあればそれを使用）
         let artwork: UIImage? = {
-            guard let artworkCatalog = nowPlaying.artwork else { return nil }
+            // 既にキャッシュがあればそれを使う
+            if let cached = cachedArtwork {
+                return cached
+            }
+
+            guard let artworkCatalog = nowPlaying.artwork else {
+                // リトライカウントを増やしてあとで再試行
+                if artworkRetryCount < maxArtworkRetries {
+                    artworkRetryCount += 1
+                    scheduleArtworkRetry()
+                }
+                return nil
+            }
 
             // Try different sizes in order of preference
             let sizes = [
@@ -112,6 +138,7 @@ class MusicInfoReader: ObservableObject {
 
             for size in sizes {
                 if let image = artworkCatalog.image(at: size) {
+                    cachedArtwork = image
                     return image
                 }
             }
@@ -119,7 +146,16 @@ class MusicInfoReader: ObservableObject {
             // Fallback to bounds size
             let boundsSize = artworkCatalog.bounds.size
             if boundsSize.width > 0 && boundsSize.height > 0 {
-                return artworkCatalog.image(at: boundsSize)
+                if let image = artworkCatalog.image(at: boundsSize) {
+                    cachedArtwork = image
+                    return image
+                }
+            }
+
+            // アートワークが取得できなかった場合はリトライ
+            if artworkRetryCount < maxArtworkRetries {
+                artworkRetryCount += 1
+                scheduleArtworkRetry()
             }
 
             return nil
@@ -134,6 +170,13 @@ class MusicInfoReader: ObservableObject {
             self.isPlaying = playing
             self.currentTime = time
             self.duration = trackDuration
+        }
+    }
+
+    private func scheduleArtworkRetry() {
+        // 0.3秒後にリトライ
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.updateMusicInfo()
         }
     }
 
