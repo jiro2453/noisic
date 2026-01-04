@@ -183,7 +183,7 @@ struct MusicPlayerView: View {
 
             // Song Info
             VStack(spacing: 4) {
-                Text(musicInfoReader.musicInfo.title ?? "再生中の曲がありません")
+                Text(musicInfoReader.musicInfo.title ?? "No song playing")
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
