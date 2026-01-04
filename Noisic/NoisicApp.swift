@@ -11,7 +11,7 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         ZStack {
-            Color(red: 0.118, green: 0.133, blue: 0.149)
+            Color(red: 0.85, green: 0.85, blue: 0.87)
                 .ignoresSafeArea()
 
             Image("LaunchLogo")
