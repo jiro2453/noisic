@@ -71,6 +71,9 @@ class MusicInfoReader: ObservableObject {
         player?.repeatMode = .all
         isAuthorized = true
 
+        // ライブラリ変更の通知を開始
+        MPMediaLibrary.default().beginGeneratingLibraryChangeNotifications()
+
         // 曲が変わった時の通知を監視
         NotificationCenter.default.addObserver(
             self,
@@ -78,6 +81,25 @@ class MusicInfoReader: ObservableObject {
             name: .MPMusicPlayerControllerNowPlayingItemDidChange,
             object: player
         )
+
+        // 再生状態が変わった時の通知を監視
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(playbackStateDidChange),
+            name: .MPMusicPlayerControllerPlaybackStateDidChange,
+            object: player
+        )
+
+        // ライブラリ変更の通知を監視
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(libraryDidChange),
+            name: .MPMediaLibraryDidChange,
+            object: nil
+        )
+
+        // プレイヤーの状態を準備
+        player?.prepareToPlay()
 
         startMonitoring()
     }
@@ -87,11 +109,26 @@ class MusicInfoReader: ObservableObject {
         cachedArtwork = nil
         cachedArtworkId = 0
         artworkRetryCount = 0
+        // 少し遅延させてから更新（アートワークの準備を待つ）
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            self?.updateMusicInfo()
+        }
+    }
+
+    @objc private func playbackStateDidChange() {
+        updateMusicInfo()
+    }
+
+    @objc private func libraryDidChange() {
+        // ライブラリが変更されたらキャッシュをクリア
+        cachedArtwork = nil
+        cachedArtworkId = 0
         updateMusicInfo()
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
+        MPMediaLibrary.default().endGeneratingLibraryChangeNotifications()
         player?.endGeneratingPlaybackNotifications()
         stopMonitoring()
     }
@@ -176,6 +213,22 @@ class MusicInfoReader: ObservableObject {
 
     /// メインスレッドでアートワークを取得
     private func fetchArtwork(for item: MPMediaItem) -> UIImage? {
+        // 方法0: プレイヤーの現在のnowPlayingItemから直接取得（最新状態）
+        if let currentItem = player?.nowPlayingItem,
+           currentItem.persistentID == item.persistentID,
+           let currentArtwork = currentItem.artwork {
+            let sizes = [
+                CGSize(width: 600, height: 600),
+                CGSize(width: 400, height: 400),
+                CGSize(width: 300, height: 300)
+            ]
+            for size in sizes {
+                if let image = currentArtwork.image(at: size) {
+                    return image
+                }
+            }
+        }
+
         // 方法1: MPMediaItemから直接取得
         if let artworkCatalog = item.artwork {
             let sizes = [
