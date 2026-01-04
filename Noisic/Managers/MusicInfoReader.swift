@@ -262,7 +262,7 @@ class MusicInfoReader: ObservableObject {
                     // 現在再生中の曲と一致する場合のみ更新
                     if let currentItem = self.player?.nowPlayingItem,
                        currentItem.persistentID == item.persistentID {
-                        let playing = self.player?.playbackState == .playing ?? false
+                        let playing = (self.player?.playbackState == .playing)
                         let time = self.player?.currentPlaybackTime ?? 0
                         let duration = currentItem.playbackDuration
                         self.musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
