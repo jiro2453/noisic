@@ -153,7 +153,8 @@ struct LibraryModalView: View {
             }
         }
         .onAppear {
-            libraryManager.checkAuthorization()
+            // モーダル表示時にライブラリを更新
+            libraryManager.refreshLibrary()
         }
     }
 }

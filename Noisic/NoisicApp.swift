@@ -44,6 +44,8 @@ struct NoisicApp: App {
                     .onAppear {
                         // MusicInfoReaderにLibraryManagerを設定
                         musicInfoReader.libraryManager = libraryManager
+                        // アプリ起動時にライブラリを更新
+                        libraryManager.refreshLibrary()
                     }
 
                 if showSplash {

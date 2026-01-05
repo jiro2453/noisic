@@ -30,7 +30,13 @@ class LibraryManager: ObservableObject {
     }
 
     func checkAuthorization() {
-        guard !hasCheckedAuthorization else { return }
+        guard !hasCheckedAuthorization else {
+            // 既に認証済みの場合はライブラリを更新
+            if isAuthorized {
+                loadLibrary()
+            }
+            return
+        }
         hasCheckedAuthorization = true
 
         DispatchQueue.main.async { [weak self] in
@@ -53,6 +59,15 @@ class LibraryManager: ObservableObject {
                 self?.isAuthorized = false
             }
         }
+    }
+
+    /// ライブラリを強制的に更新
+    func refreshLibrary() {
+        guard isAuthorized else {
+            checkAuthorization()
+            return
+        }
+        loadLibrary()
     }
 
     func loadLibrary() {
