@@ -107,7 +107,30 @@ class MusicInfoReader: ObservableObject {
 
         let title = nowPlaying.title
         let artist = nowPlaying.artist
-        let artwork = nowPlaying.artwork?.image(at: CGSize(width: 300, height: 300))
+
+        // アートワークを取得
+        var artwork: UIImage? = nil
+
+        // 方法1: 曲から直接取得
+        if let mpArtwork = nowPlaying.artwork {
+            artwork = mpArtwork.image(at: CGSize(width: 300, height: 300))
+        }
+
+        // 方法2: アルバムから取得
+        if artwork == nil {
+            let albumId = nowPlaying.albumPersistentID
+            let query = MPMediaQuery.albums()
+            query.addFilterPredicate(MPMediaPropertyPredicate(
+                value: albumId,
+                forProperty: MPMediaItemPropertyAlbumPersistentID
+            ))
+            if let collection = query.collections?.first,
+               let repItem = collection.representativeItem,
+               let repArtwork = repItem.artwork {
+                artwork = repArtwork.image(at: CGSize(width: 300, height: 300))
+            }
+        }
+
         let playing = player.playbackState == .playing
 
         musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
