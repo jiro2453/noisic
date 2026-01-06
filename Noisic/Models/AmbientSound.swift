@@ -58,4 +58,14 @@ enum AmbientSound: String, CaseIterable, Identifiable {
         case .bonfire: return 1.5
         }
     }
+
+    // プレミアムコンテンツかどうか（ocean, drive, riverは課金が必要）
+    var isPremium: Bool {
+        switch self {
+        case .ocean, .drive, .river:
+            return true
+        case .bonfire, .nightRain, .nature:
+            return false
+        }
+    }
 }

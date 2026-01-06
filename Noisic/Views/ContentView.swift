@@ -77,8 +77,10 @@ struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
     @EnvironmentObject var libraryManager: LibraryManager
+    @EnvironmentObject var storeManager: StoreManager
     @State private var currentIndex = 6
     @State private var showLibraryModal = false
+    @State private var showPaywall = false
 
     private var extendedSounds: [AmbientSound] {
         AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
@@ -86,6 +88,14 @@ struct ContentView: View {
 
     private var actualIndex: Int {
         currentIndex % AmbientSound.allCases.count
+    }
+
+    private var currentSound: AmbientSound {
+        AmbientSound.allCases[actualIndex]
+    }
+
+    private var isCurrentSoundLocked: Bool {
+        currentSound.isPremium && !storeManager.isPremiumUnlocked
     }
 
     var body: some View {
@@ -108,6 +118,13 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
+            // ロック時の追加オーバーレイ
+            if isCurrentSoundLocked {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+
             // Foreground Content
             VStack(spacing: 0) {
                 // Ambient Sound Icon with Navigation Arrows at Top
@@ -119,11 +136,21 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .opacity(0.4)
 
-                        Image(systemName: AmbientSound.allCases[actualIndex].icon)
-                            .font(.system(size: 36))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .opacity(0.55)
+                        ZStack {
+                            Image(systemName: currentSound.icon)
+                                .font(.system(size: 36))
+                                .foregroundColor(.white)
+                                .frame(width: 40, height: 40)
+                                .opacity(isCurrentSoundLocked ? 0.3 : 0.55)
+
+                            // ロックアイコン
+                            if isCurrentSoundLocked {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .offset(x: 20, y: 15)
+                            }
+                        }
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 20, weight: .semibold))
@@ -131,6 +158,26 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
+
+                    // アンロックボタン（ロック時のみ表示）
+                    if isCurrentSoundLocked {
+                        Button(action: {
+                            showPaywall = true
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "lock.open.fill")
+                                    .font(.system(size: 12))
+                                Text("アンロック")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(.black)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(Color.white)
+                            .cornerRadius(20)
+                        }
+                        .padding(.top, 8)
+                    }
 
                     // Volume Control
                     HStack(spacing: 12) {
@@ -193,11 +240,21 @@ struct ContentView: View {
             .environmentObject(libraryManager)
             .modifier(HalfModalModifier())
         }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView(isPresented: $showPaywall)
+                .environmentObject(storeManager)
+        }
     }
 
     private func handleIndexChange() {
         let sound = extendedSounds[currentIndex]
-        audioManager.play(sound: sound)
+
+        // ロックされているサウンドの場合は音声を停止
+        if sound.isPremium && !storeManager.isPremiumUnlocked {
+            audioManager.stop()
+        } else {
+            audioManager.play(sound: sound)
+        }
 
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {

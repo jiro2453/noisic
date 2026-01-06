@@ -27,6 +27,7 @@ struct NoisicApp: App {
     @StateObject private var audioManager = AudioManager()
     @StateObject private var musicInfoReader = MusicInfoReader()
     @StateObject private var libraryManager = LibraryManager()
+    @StateObject private var storeManager = StoreManager()
     @State private var showSplash = true
 
     init() {
@@ -41,6 +42,7 @@ struct NoisicApp: App {
                     .environmentObject(audioManager)
                     .environmentObject(musicInfoReader)
                     .environmentObject(libraryManager)
+                    .environmentObject(storeManager)
                     .onAppear {
                         // MusicInfoReaderにLibraryManagerを設定
                         musicInfoReader.libraryManager = libraryManager
