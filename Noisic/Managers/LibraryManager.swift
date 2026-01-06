@@ -24,50 +24,123 @@ class LibraryManager: ObservableObject {
     @Published var isAuthorized = false
 
     private var hasCheckedAuthorization = false
+    private var currentPlayingAlbumId: UInt64?
 
     init() {
-        // Don't check authorization in init to avoid blocking
+        // 再生中の曲が変わった時の通知を受け取る
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(nowPlayingItemChanged),
+            name: .MPMusicPlayerControllerNowPlayingItemDidChange,
+            object: nil
+        )
+        MPMusicPlayerController.systemMusicPlayer.beginGeneratingPlaybackNotifications()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        MPMusicPlayerController.systemMusicPlayer.endGeneratingPlaybackNotifications()
+    }
+
+    @objc private func nowPlayingItemChanged() {
+        // 現在再生中のアルバムを最近再生の先頭に追加
+        updateCurrentPlayingAlbum()
+    }
+
+    /// 現在再生中のアルバムを最近再生リストの先頭に追加
+    func updateCurrentPlayingAlbum() {
+        guard let nowPlaying = MPMusicPlayerController.systemMusicPlayer.nowPlayingItem else {
+            return
+        }
+
+        let albumId = nowPlaying.albumPersistentID
+
+        // 同じアルバムなら更新不要
+        if albumId == currentPlayingAlbumId {
+            return
+        }
+        currentPlayingAlbumId = albumId
+
+        // アルバム情報を取得
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let query = MPMediaQuery.albums()
+            query.addFilterPredicate(MPMediaPropertyPredicate(
+                value: albumId,
+                forProperty: MPMediaItemPropertyAlbumPersistentID
+            ))
+
+            guard let collection = query.collections?.first,
+                  let representativeItem = collection.representativeItem else {
+                return
+            }
+
+            let newAlbum = LibraryAlbum(
+                id: collection.persistentID,
+                title: representativeItem.albumTitle,
+                artist: representativeItem.albumArtist ?? representativeItem.artist,
+                artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                collection: collection
+            )
+
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+
+                // 既存のリストから同じアルバムを削除
+                var updated = self.recentlyPlayed.filter { $0.id != newAlbum.id }
+
+                // 先頭に追加
+                updated.insert(newAlbum, at: 0)
+
+                // 30件に制限
+                if updated.count > 30 {
+                    updated = Array(updated.prefix(30))
+                }
+
+                self.recentlyPlayed = updated
+                self.updateCombinedAlbums()
+            }
+        }
     }
 
     func checkAuthorization() {
-        guard !hasCheckedAuthorization else {
-            // 既に認証済みの場合はライブラリを更新
-            if isAuthorized {
+        let status = MPMediaLibrary.authorizationStatus()
+
+        switch status {
+        case .authorized:
+            isAuthorized = true
+            if !hasCheckedAuthorization {
+                hasCheckedAuthorization = true
                 loadLibrary()
             }
-            return
-        }
-        hasCheckedAuthorization = true
-
-        DispatchQueue.main.async { [weak self] in
-            let status = MPMediaLibrary.authorizationStatus()
-
-            switch status {
-            case .authorized:
-                self?.isAuthorized = true
-                self?.loadLibrary()
-            case .notDetermined:
-                MPMediaLibrary.requestAuthorization { [weak self] newStatus in
-                    DispatchQueue.main.async {
-                        self?.isAuthorized = (newStatus == .authorized)
-                        if newStatus == .authorized {
-                            self?.loadLibrary()
-                        }
+        case .notDetermined:
+            MPMediaLibrary.requestAuthorization { [weak self] newStatus in
+                DispatchQueue.main.async {
+                    self?.isAuthorized = (newStatus == .authorized)
+                    self?.hasCheckedAuthorization = true
+                    if newStatus == .authorized {
+                        self?.loadLibrary()
                     }
                 }
-            default:
-                self?.isAuthorized = false
             }
+        default:
+            isAuthorized = false
+            hasCheckedAuthorization = true
         }
     }
 
     /// ライブラリを強制的に更新
     func refreshLibrary() {
-        guard isAuthorized else {
+        let status = MPMediaLibrary.authorizationStatus()
+        if status == .authorized {
+            isAuthorized = true
+            loadLibrary()
+            // 現在再生中のアルバムを即座に反映
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.updateCurrentPlayingAlbum()
+            }
+        } else if !hasCheckedAuthorization {
             checkAuthorization()
-            return
         }
-        loadLibrary()
     }
 
     func loadLibrary() {
@@ -129,14 +202,19 @@ class LibraryManager: ObservableObject {
                 return
             }
 
-            // Sort by last played date (most recent first)
-            let sortedCollections = collections.sorted { collection1, collection2 in
-                let date1 = collection1.items.first?.lastPlayedDate ?? Date.distantPast
-                let date2 = collection2.items.first?.lastPlayedDate ?? Date.distantPast
-                return date1 > date2
-            }.filter { collection in
+            // Helper function to get the most recent play date from all items in an album
+            func mostRecentPlayDate(for collection: MPMediaItemCollection) -> Date? {
+                collection.items.compactMap { $0.lastPlayedDate }.max()
+            }
+
+            // Sort by last played date (most recent first) - use max date from all tracks
+            let sortedCollections = collections.filter { collection in
                 // Only include albums that have been played
-                collection.items.first?.lastPlayedDate != nil
+                mostRecentPlayDate(for: collection) != nil
+            }.sorted { collection1, collection2 in
+                let date1 = mostRecentPlayDate(for: collection1) ?? Date.distantPast
+                let date2 = mostRecentPlayDate(for: collection2) ?? Date.distantPast
+                return date1 > date2
             }
 
             // Take first 30 recently played albums
