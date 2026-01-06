@@ -9,8 +9,12 @@ import StoreKit
 
 @MainActor
 class StoreManager: ObservableObject {
-    // プロダクトID（App Store Connectで設定する必要あり）
-    static let premiumSoundsProductId = "com.noisic.premiumsounds"
+    // 各サウンドのプロダクトID
+    static let productIds: Set<String> = [
+        "com.noisic.sound.ocean",
+        "com.noisic.sound.drive",
+        "com.noisic.sound.river"
+    ]
 
     @Published var products: [Product] = []
     @Published var purchasedProductIds: Set<String> = []
@@ -31,33 +35,38 @@ class StoreManager: ObservableObject {
         updateListenerTask?.cancel()
     }
 
-    // プレミアムサウンド（ocean, drive, river）がアンロックされているか
-    var isPremiumUnlocked: Bool {
-        purchasedProductIds.contains(Self.premiumSoundsProductId)
-    }
-
     // 特定のサウンドがアンロックされているか
     func isUnlocked(_ sound: AmbientSound) -> Bool {
         if !sound.isPremium {
             return true
         }
-        return isPremiumUnlocked
+        guard let productId = sound.productId else {
+            return true
+        }
+        return purchasedProductIds.contains(productId)
+    }
+
+    // 特定のサウンドのプロダクトを取得
+    func product(for sound: AmbientSound) -> Product? {
+        guard let productId = sound.productId else { return nil }
+        return products.first { $0.id == productId }
     }
 
     // プロダクトを読み込み
     func loadProducts() async {
         isLoading = true
         do {
-            products = try await Product.products(for: [Self.premiumSoundsProductId])
+            products = try await Product.products(for: Self.productIds)
         } catch {
             print("Failed to load products: \(error)")
         }
         isLoading = false
     }
 
-    // 購入処理
-    func purchase() async throws -> Bool {
-        guard let product = products.first else {
+    // 特定のサウンドを購入
+    func purchase(sound: AmbientSound) async throws -> Bool {
+        guard let productId = sound.productId,
+              let product = products.first(where: { $0.id == productId }) else {
             return false
         }
 

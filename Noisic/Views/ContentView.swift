@@ -95,7 +95,7 @@ struct ContentView: View {
     }
 
     private var isCurrentSoundLocked: Bool {
-        currentSound.isPremium && !storeManager.isPremiumUnlocked
+        !storeManager.isUnlocked(currentSound)
     }
 
     var body: some View {
@@ -167,14 +167,10 @@ struct ContentView: View {
                             HStack(spacing: 6) {
                                 Image(systemName: "lock.open.fill")
                                     .font(.system(size: 12))
-                                Text("アンロック")
+                                Text("unlock")
                                     .font(.system(size: 14, weight: .medium))
                             }
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.white)
-                            .cornerRadius(20)
+                            .foregroundColor(.white)
                         }
                         .padding(.top, 8)
                     }
@@ -241,7 +237,7 @@ struct ContentView: View {
             .modifier(HalfModalModifier())
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(isPresented: $showPaywall)
+            PaywallView(isPresented: $showPaywall, targetSound: currentSound)
                 .environmentObject(storeManager)
         }
     }
@@ -250,7 +246,7 @@ struct ContentView: View {
         let sound = extendedSounds[currentIndex]
 
         // ロックされているサウンドの場合は音声を停止
-        if sound.isPremium && !storeManager.isPremiumUnlocked {
+        if !storeManager.isUnlocked(sound) {
             audioManager.stop()
         } else {
             audioManager.play(sound: sound)

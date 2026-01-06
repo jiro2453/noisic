@@ -10,6 +10,8 @@ import SwiftUI
 struct PaywallView: View {
     @EnvironmentObject var storeManager: StoreManager
     @Binding var isPresented: Bool
+    let targetSound: AmbientSound
+
     @State private var isPurchasing = false
     @State private var showError = false
     @State private var errorMessage = ""
@@ -37,38 +39,33 @@ struct PaywallView: View {
 
                 Spacer()
 
+                // サウンドアイコン
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 120, height: 120)
+
+                    Image(systemName: targetSound.icon)
+                        .font(.system(size: 50))
+                        .foregroundColor(.white)
+                }
+
                 // タイトル
-                VStack(spacing: 12) {
-                    Text("Premium Sounds")
+                VStack(spacing: 8) {
+                    Text(targetSound.displayName)
                         .font(.system(size: 32, weight: .bold))
                         .foregroundColor(.white)
 
-                    Text("すべての環境音をアンロック")
+                    Text("Unlock this ambient sound")
                         .font(.system(size: 16))
                         .foregroundColor(.white.opacity(0.7))
                 }
-
-                // プレミアムサウンドのプレビュー
-                HStack(spacing: 24) {
-                    PremiumSoundIcon(icon: "water.waves", name: "Ocean")
-                    PremiumSoundIcon(icon: "car.fill", name: "Drive")
-                    PremiumSoundIcon(icon: "drop.fill", name: "River")
-                }
-                .padding(.vertical, 32)
-
-                // 特典
-                VStack(alignment: .leading, spacing: 12) {
-                    FeatureRow(icon: "checkmark.circle.fill", text: "3つの追加環境音")
-                    FeatureRow(icon: "checkmark.circle.fill", text: "美しい動画背景")
-                    FeatureRow(icon: "checkmark.circle.fill", text: "一度の購入で永久利用")
-                }
-                .padding(.horizontal, 40)
 
                 Spacer()
 
                 // 購入ボタン
                 VStack(spacing: 12) {
-                    if let product = storeManager.products.first {
+                    if let product = storeManager.product(for: targetSound) {
                         Button(action: {
                             purchase()
                         }) {
@@ -77,7 +74,7 @@ struct PaywallView: View {
                                     ProgressView()
                                         .progressViewStyle(CircularProgressViewStyle(tint: .black))
                                 } else {
-                                    Text("購入する - \(product.displayPrice)")
+                                    Text("Buy - \(product.displayPrice)")
                                         .font(.system(size: 18, weight: .semibold))
                                 }
                             }
@@ -93,7 +90,7 @@ struct PaywallView: View {
                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             .frame(height: 54)
                     } else {
-                        Text("製品情報を読み込めません")
+                        Text("Product unavailable")
                             .foregroundColor(.white.opacity(0.5))
                             .frame(height: 54)
                     }
@@ -102,12 +99,12 @@ struct PaywallView: View {
                     Button(action: {
                         Task {
                             await storeManager.restorePurchases()
-                            if storeManager.isPremiumUnlocked {
+                            if storeManager.isUnlocked(targetSound) {
                                 isPresented = false
                             }
                         }
                     }) {
-                        Text("購入を復元")
+                        Text("Restore Purchases")
                             .font(.system(size: 14))
                             .foregroundColor(.white.opacity(0.6))
                     }
@@ -116,7 +113,7 @@ struct PaywallView: View {
                 .padding(.bottom, 40)
             }
         }
-        .alert("エラー", isPresented: $showError) {
+        .alert("Error", isPresented: $showError) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage)
@@ -127,57 +124,15 @@ struct PaywallView: View {
         isPurchasing = true
         Task {
             do {
-                let success = try await storeManager.purchase()
+                let success = try await storeManager.purchase(sound: targetSound)
                 if success {
                     isPresented = false
                 }
             } catch {
-                errorMessage = "購入に失敗しました。もう一度お試しください。"
+                errorMessage = "Purchase failed. Please try again."
                 showError = true
             }
             isPurchasing = false
-        }
-    }
-}
-
-struct PremiumSoundIcon: View {
-    let icon: String
-    let name: String
-
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(Color.white.opacity(0.1))
-                    .frame(width: 70, height: 70)
-
-                Image(systemName: icon)
-                    .font(.system(size: 28))
-                    .foregroundColor(.white)
-            }
-
-            Text(name)
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.7))
-        }
-    }
-}
-
-struct FeatureRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(.green)
-
-            Text(text)
-                .font(.system(size: 16))
-                .foregroundColor(.white)
-
-            Spacer()
         }
     }
 }

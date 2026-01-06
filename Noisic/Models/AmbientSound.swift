@@ -68,4 +68,18 @@ enum AmbientSound: String, CaseIterable, Identifiable {
             return false
         }
     }
+
+    // 各サウンドのプロダクトID
+    var productId: String? {
+        switch self {
+        case .ocean:
+            return "com.noisic.sound.ocean"
+        case .drive:
+            return "com.noisic.sound.drive"
+        case .river:
+            return "com.noisic.sound.river"
+        default:
+            return nil
+        }
+    }
 }
