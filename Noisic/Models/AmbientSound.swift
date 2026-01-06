@@ -8,12 +8,12 @@
 import Foundation
 
 enum AmbientSound: String, CaseIterable, Identifiable {
+    case bonfire = "bonfire"
     case nightRain = "night_rain"
     case nature = "nature"
+    case ocean = "ocean"
     case drive = "drive"
     case river = "river"
-    case ocean = "ocean"
-    case bonfire = "bonfire"
 
     var id: String { rawValue }
 
