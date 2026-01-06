@@ -77,7 +77,7 @@ struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
     @EnvironmentObject var musicInfoReader: MusicInfoReader
     @EnvironmentObject var libraryManager: LibraryManager
-    @State private var currentIndex = 11
+    @State private var currentIndex = 6
     @State private var showLibraryModal = false
 
     private var extendedSounds: [AmbientSound] {
