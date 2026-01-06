@@ -144,7 +144,7 @@ struct ContentView: View {
                                 get: { audioManager.volume },
                                 set: { audioManager.setVolume($0) }
                             ),
-                            range: 1...4
+                            range: 0...4
                         )
 
                         Image(systemName: "speaker.wave.3.fill")
