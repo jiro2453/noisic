@@ -119,8 +119,8 @@ class StoreManager: ObservableObject {
         }
     }
 
-    // 検証
-    private func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
+    // 検証（nonisolatedでバックグラウンドタスクからも呼び出し可能）
+    private nonisolated func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         switch result {
         case .unverified:
             throw StoreError.failedVerification
