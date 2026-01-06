@@ -134,10 +134,6 @@ class LibraryManager: ObservableObject {
         if status == .authorized {
             isAuthorized = true
             loadLibrary()
-            // 現在再生中のアルバムを即座に反映
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                self?.updateCurrentPlayingAlbum()
-            }
         } else if !hasCheckedAuthorization {
             checkAuthorization()
         }
@@ -191,6 +187,9 @@ class LibraryManager: ObservableObject {
     }
 
     private func loadRecentlyPlayed() {
+        // 現在再生中のアルバムIDを先に取得
+        let currentAlbumId = MPMusicPlayerController.systemMusicPlayer.nowPlayingItem?.albumPersistentID
+
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let query = MPMediaQuery.albums()
 
@@ -220,7 +219,7 @@ class LibraryManager: ObservableObject {
             // Take first 30 recently played albums
             let recentAlbums = Array(sortedCollections.prefix(30))
 
-            let albums = recentAlbums.compactMap { collection -> LibraryAlbum? in
+            var albums = recentAlbums.compactMap { collection -> LibraryAlbum? in
                 guard let representativeItem = collection.representativeItem else { return nil }
 
                 return LibraryAlbum(
@@ -232,8 +231,40 @@ class LibraryManager: ObservableObject {
                 )
             }
 
+            // 現在再生中のアルバムを先頭に移動
+            if let currentId = currentAlbumId {
+                // 現在再生中のアルバムがリストにあれば先頭に移動
+                if let index = albums.firstIndex(where: { $0.id == currentId }) {
+                    let currentAlbum = albums.remove(at: index)
+                    albums.insert(currentAlbum, at: 0)
+                } else {
+                    // リストにない場合は新たに取得して先頭に追加
+                    let currentQuery = MPMediaQuery.albums()
+                    currentQuery.addFilterPredicate(MPMediaPropertyPredicate(
+                        value: currentId,
+                        forProperty: MPMediaItemPropertyAlbumPersistentID
+                    ))
+                    if let collection = currentQuery.collections?.first,
+                       let representativeItem = collection.representativeItem {
+                        let currentAlbum = LibraryAlbum(
+                            id: collection.persistentID,
+                            title: representativeItem.albumTitle,
+                            artist: representativeItem.albumArtist ?? representativeItem.artist,
+                            artwork: representativeItem.artwork?.image(at: CGSize(width: 200, height: 200)),
+                            collection: collection
+                        )
+                        albums.insert(currentAlbum, at: 0)
+                        // 30件に制限
+                        if albums.count > 30 {
+                            albums = Array(albums.prefix(30))
+                        }
+                    }
+                }
+            }
+
             DispatchQueue.main.async {
                 self?.recentlyPlayed = albums
+                self?.currentPlayingAlbumId = currentAlbumId
                 self?.updateCombinedAlbums()
             }
         }
