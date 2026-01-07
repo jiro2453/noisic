@@ -170,8 +170,16 @@ struct ContentView: View {
                                             .font(.system(size: 12))
                                         Text("unlock")
                                             .font(.system(size: 14, weight: .medium))
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 12, weight: .semibold))
                                     }
                                     .foregroundColor(.white)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Capsule()
+                                            .fill(Color.white.opacity(0.2))
+                                    )
                                 }
                             }
                         }
