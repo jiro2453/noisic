@@ -129,6 +129,22 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 // Ambient Sound Icon with Navigation Arrows at Top
                 VStack(spacing: 12) {
+                    // アンロックボタン（ロック時のみ表示、アイコンの上）
+                    if isCurrentSoundLocked {
+                        Button(action: {
+                            showPaywall = true
+                        }) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "lock.open.fill")
+                                    .font(.system(size: 12))
+                                Text("unlock")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(.white)
+                        }
+                        .padding(.bottom, 8)
+                    }
+
                     // Icon with Arrows
                     HStack(spacing: 20) {
                         Image(systemName: "chevron.left")
@@ -158,22 +174,6 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-
-                    // アンロックボタン（ロック時のみ表示）
-                    if isCurrentSoundLocked {
-                        Button(action: {
-                            showPaywall = true
-                        }) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "lock.open.fill")
-                                    .font(.system(size: 12))
-                                Text("unlock")
-                                    .font(.system(size: 14, weight: .medium))
-                            }
-                            .foregroundColor(.white)
-                        }
-                        .padding(.top, 8)
-                    }
 
                     // Volume Control
                     HStack(spacing: 12) {
