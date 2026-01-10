@@ -1,0 +1,130 @@
+{
+  "identifier" : "A1B2C3D4",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "ocean_001",
+      "localizations" : [
+        {
+          "description" : "Unlock the Ocean ambient sound with beautiful video background",
+          "displayName" : "Ocean Sound",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "海の環境音と美しい動画背景をアンロック",
+          "displayName" : "Ocean サウンド",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.noisic.sound.ocean",
+      "referenceName" : "Ocean Sound",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "drive_001",
+      "localizations" : [
+        {
+          "description" : "Unlock the Drive ambient sound with beautiful video background",
+          "displayName" : "Drive Sound",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "ドライブの環境音と美しい動画背景をアンロック",
+          "displayName" : "Drive サウンド",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.noisic.sound.drive",
+      "referenceName" : "Drive Sound",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "1.99",
+      "familyShareable" : false,
+      "internalID" : "river_001",
+      "localizations" : [
+        {
+          "description" : "Unlock the River ambient sound with beautiful video background",
+          "displayName" : "River Sound",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "川の環境音と美しい動画背景をアンロック",
+          "displayName" : "River サウンド",
+          "locale" : "ja"
+        }
+      ],
+      "productID" : "com.noisic.sound.river",
+      "referenceName" : "River Sound",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "1234567890",
+    "_developerTeamID" : "XXXXXXXXXX",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Load Products"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Purchase"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Verification"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Store Sync"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Subscription Status"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "App Transaction"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Manage Subscriptions Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Refund Request Sheet"
+      },
+      {
+        "current" : null,
+        "enabled" : false,
+        "name" : "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

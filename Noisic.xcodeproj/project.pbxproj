@@ -23,6 +23,8 @@
 		AA0029 /* MusicLibrarySheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0030 /* MusicLibrarySheet.swift */; };
 		AA0031 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0032 /* StoreManager.swift */; };
 		AA0033 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0034 /* PaywallView.swift */; };
+		AA0035 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA0036 /* PrivacyInfo.xcprivacy */; };
+		AA0037 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AA0038 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,9 @@
 		AA0030 /* MusicLibrarySheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicLibrarySheet.swift; sourceTree = "<group>"; };
 		AA0032 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
 		AA0034 /* PaywallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		AA0036 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AA0039 /* Configuration.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Configuration.storekit; sourceTree = "<group>"; };
+		AA0040 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AA0099 /* Noisic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Noisic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -76,8 +81,18 @@
 				AA0021 /* Assets.xcassets */,
 				AA0022 /* LaunchScreen.storyboard */,
 				AA0015 /* Info.plist */,
+				AA0036 /* PrivacyInfo.xcprivacy */,
+				AA0039 /* Configuration.storekit */,
 			);
 			path = Noisic;
+			sourceTree = "<group>";
+		};
+		AA0038 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AA0040 /* ja */,
+			);
+			name = InfoPlist.strings;
 			sourceTree = "<group>";
 		};
 		AA0202 /* Products */ = {
@@ -187,6 +202,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ja,
 			);
 			mainGroup = AA0200;
 			productRefGroup = AA0202 /* Products */;
@@ -205,6 +221,8 @@
 			files = (
 				AA0023 /* Assets.xcassets in Resources */,
 				AA0024 /* LaunchScreen.storyboard in Resources */,
+				AA0035 /* PrivacyInfo.xcprivacy in Resources */,
+				AA0037 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
