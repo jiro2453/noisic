@@ -170,6 +170,7 @@ struct ContentView: View {
                                             .font(.system(size: 12))
                                         Text("unlock")
                                             .font(.system(size: 14, weight: .medium))
+                                            .fixedSize()
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 12, weight: .semibold))
                                     }
@@ -180,6 +181,7 @@ struct ContentView: View {
                                         Capsule()
                                             .fill(Color.white.opacity(0.2))
                                     )
+                                    .fixedSize()
                                 }
                             }
                         }
