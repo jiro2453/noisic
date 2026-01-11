@@ -83,6 +83,7 @@
 				AA0015 /* Info.plist */,
 				AA0036 /* PrivacyInfo.xcprivacy */,
 				AA0039 /* Configuration.storekit */,
+				AA0038 /* InfoPlist.strings */,
 			);
 			path = Noisic;
 			sourceTree = "<group>";
