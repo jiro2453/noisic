@@ -246,6 +246,8 @@ struct MusicPlayerView: View {
                         Image(systemName: "backward.fill")
                             .font(.system(size: 24))
                             .foregroundColor(.white.opacity(0.8))
+                            .frame(width: 50, height: 50)
+                            .contentShape(Rectangle())
                     }
 
                     Button(action: {
@@ -263,6 +265,8 @@ struct MusicPlayerView: View {
                         Image(systemName: "forward.fill")
                             .font(.system(size: 24))
                             .foregroundColor(.white.opacity(0.8))
+                            .frame(width: 50, height: 50)
+                            .contentShape(Rectangle())
                     }
                 }
 
