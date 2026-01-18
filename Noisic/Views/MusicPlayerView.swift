@@ -169,16 +169,26 @@ struct HexagonButtonShape: Shape {
 struct MusicPlayerView: View {
     @EnvironmentObject var musicInfoReader: MusicInfoReader
     @Binding var showLibraryModal: Bool
+    var isLocked: Bool = false
     @State private var isSeeking = false
     @State private var seekValue: Double = 0
 
     var body: some View {
         VStack(spacing: 16) {
             // Album Artwork / Vinyl Record
-            VinylRecordView(
-                artwork: musicInfoReader.musicInfo.artwork,
-                isPlaying: musicInfoReader.isPlaying
-            )
+            ZStack {
+                VinylRecordView(
+                    artwork: musicInfoReader.musicInfo.artwork,
+                    isPlaying: musicInfoReader.isPlaying
+                )
+
+                // ロック時のシャドウオーバーレイ
+                if isLocked {
+                    Circle()
+                        .fill(Color.black.opacity(0.5))
+                        .frame(width: 330, height: 330)
+                }
+            }
             .offset(y: -20)
 
             // Song Info

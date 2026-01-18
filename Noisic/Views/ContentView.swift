@@ -158,36 +158,6 @@ struct ContentView: View {
                             .opacity(0.4)
                     }
                     .shadow(color: .black.opacity(0.5), radius: 10)
-                    .overlay(
-                        // アンロックボタン（アイコンの上に固定配置）
-                        Group {
-                            if isCurrentSoundLocked {
-                                Button(action: {
-                                    showPaywall = true
-                                }) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "lock.open.fill")
-                                            .font(.system(size: 12))
-                                        Text("unlock")
-                                            .font(.system(size: 14, weight: .medium))
-                                            .fixedSize()
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 12, weight: .semibold))
-                                    }
-                                    .foregroundColor(.white)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color.white.opacity(0.2))
-                                    )
-                                    .fixedSize()
-                                }
-                            }
-                        }
-                        .offset(y: -50),
-                        alignment: .top
-                    )
 
                     // Volume Control
                     HStack(spacing: 12) {
@@ -216,8 +186,36 @@ struct ContentView: View {
                 Spacer()
 
                 // Music Player
-                MusicPlayerView(showLibraryModal: $showLibraryModal)
-                    .padding(.bottom, 50)
+                ZStack {
+                    MusicPlayerView(showLibraryModal: $showLibraryModal, isLocked: isCurrentSoundLocked)
+
+                    // アンロックボタン（レコードの上に配置）
+                    if isCurrentSoundLocked {
+                        Button(action: {
+                            showPaywall = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "lock.open.fill")
+                                    .font(.system(size: 16))
+                                Text("UNLOCK")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .fixedSize()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white.opacity(0.25))
+                            )
+                            .fixedSize()
+                        }
+                        .offset(y: -80)
+                    }
+                }
+                .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
         }
