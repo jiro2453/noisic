@@ -208,7 +208,7 @@ struct ContentView: View {
                             .padding(.vertical, 12)
                             .background(
                                 Capsule()
-                                    .fill(Color.white.opacity(0.25))
+                                    .fill(Color.white.opacity(0.4))
                             )
                             .fixedSize()
                         }
