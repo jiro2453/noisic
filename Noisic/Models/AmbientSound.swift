@@ -54,7 +54,7 @@ enum AmbientSound: String, CaseIterable, Identifiable {
         case .nature: return 12.0
         case .drive: return 12.0
         case .river: return 20.0
-        case .ocean: return 10.0
+        case .ocean: return 7.0
         case .bonfire: return 0.7
         }
     }
