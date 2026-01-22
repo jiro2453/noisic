@@ -59,7 +59,7 @@ class AudioManager: ObservableObject {
 
             // 音量を設定（baseGain × volumeMultiplier × ユーザー音量）
             let effectiveVolume = (volume / 4.0) * sound.volumeMultiplier * baseGain
-            mixer.outputVolume = min(effectiveVolume, 10.0) // 最大10.0まで許可
+            mixer.outputVolume = min(effectiveVolume, 30.0) // 最大30.0まで許可
 
             // エンジン開始
             try engine.start()
@@ -103,6 +103,6 @@ class AudioManager: ObservableObject {
 
         // 音量を更新
         let effectiveVolume = (newVolume / 4.0) * sound.volumeMultiplier * baseGain
-        engine.mainMixerNode.outputVolume = min(effectiveVolume, 10.0)
+        engine.mainMixerNode.outputVolume = min(effectiveVolume, 30.0)
     }
 }
