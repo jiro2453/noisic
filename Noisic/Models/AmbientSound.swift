@@ -50,11 +50,11 @@ enum AmbientSound: String, CaseIterable, Identifiable {
     // Volume multiplier (bonfire is baseline at 1.0)
     var volumeMultiplier: Float {
         switch self {
-        case .nightRain: return 5.0
-        case .nature: return 1.7
-        case .drive: return 1.8
-        case .river: return 3.0
-        case .ocean: return 1.2
+        case .nightRain: return 7.5
+        case .nature: return 2.55
+        case .drive: return 2.7
+        case .river: return 4.5
+        case .ocean: return 1.8
         case .bonfire: return 1.5
         }
     }
