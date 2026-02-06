@@ -13,122 +13,191 @@ class MusicInfoReader: ObservableObject {
     @Published var isPlaying: Bool = false
     @Published var currentTime: TimeInterval = 0
     @Published var duration: TimeInterval = 0
+    @Published var isAuthorized: Bool = false
 
     private var timer: Timer?
-    private let player = MPMusicPlayerController.systemMusicPlayer
+    private var player: MPMusicPlayerController?
+    private var isSetup = false
+    weak var libraryManager: LibraryManager?
 
     init() {
-        // Enable playback notifications
-        player.beginGeneratingPlaybackNotifications()
-        startMonitoring()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            self?.requestAuthorization()
+        }
     }
 
-    deinit {
-        player.endGeneratingPlaybackNotifications()
-        stopMonitoring()
+    private func requestAuthorization() {
+        #if targetEnvironment(simulator)
+        return
+        #else
+        let status = MPMediaLibrary.authorizationStatus()
+        switch status {
+        case .authorized:
+            setupPlayer()
+        case .notDetermined:
+            MPMediaLibrary.requestAuthorization { [weak self] newStatus in
+                DispatchQueue.main.async {
+                    if newStatus == .authorized {
+                        self?.setupPlayer()
+                    }
+                }
+            }
+        default:
+            break
+        }
+        #endif
     }
 
-    private func startMonitoring() {
-        // Update immediately
+    private func setupPlayer() {
+        guard !isSetup else { return }
+        isSetup = true
+
+        player = MPMusicPlayerController.systemMusicPlayer
+        player?.beginGeneratingPlaybackNotifications()
+        player?.repeatMode = .all
+        isAuthorized = true
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNotification),
+            name: .MPMusicPlayerControllerNowPlayingItemDidChange,
+            object: player
+        )
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleNotification),
+            name: .MPMusicPlayerControllerPlaybackStateDidChange,
+            object: player
+        )
+
         updateMusicInfo()
 
-        // Poll for updates every 1 second (reduced from 0.5 for better performance)
+        // 1秒ごとに更新
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.updateMusicInfo()
         }
     }
 
-    private func stopMonitoring() {
+    @objc private func handleNotification() {
+        updateMusicInfo()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        player?.endGeneratingPlaybackNotifications()
         timer?.invalidate()
-        timer = nil
     }
 
     private func updateMusicInfo() {
-        guard let nowPlaying = player.nowPlayingItem else {
-            DispatchQueue.main.async {
-                self.musicInfo = MusicInfo(title: nil, artist: nil, artwork: nil, isPlaying: false)
-                self.isPlaying = false
-                self.currentTime = 0
-                self.duration = 0
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                self?.updateMusicInfo()
             }
+            return
+        }
+
+        guard let player = player, let nowPlaying = player.nowPlayingItem else {
+            musicInfo = MusicInfo(title: nil, artist: nil, artwork: nil, isPlaying: false)
+            isPlaying = false
+            currentTime = 0
+            duration = 0
             return
         }
 
         let title = nowPlaying.title
         let artist = nowPlaying.artist
 
-        // Try multiple sizes to ensure artwork is retrieved
-        let artwork: UIImage? = {
-            guard let artworkCatalog = nowPlaying.artwork else { return nil }
+        // アートワークを取得
+        var artwork: UIImage? = nil
 
-            // Try different sizes in order of preference
-            let sizes = [
-                CGSize(width: 600, height: 600),
-                CGSize(width: 300, height: 300),
-                CGSize(width: 200, height: 200),
-                CGSize(width: 100, height: 100)
-            ]
+        // 方法1: 曲から直接取得
+        if let mpArtwork = nowPlaying.artwork {
+            artwork = mpArtwork.image(at: CGSize(width: 300, height: 300))
+        }
 
-            for size in sizes {
-                if let image = artworkCatalog.image(at: size) {
-                    return image
-                }
+        // 方法2: アルバムから取得
+        if artwork == nil {
+            let albumId = nowPlaying.albumPersistentID
+            let query = MPMediaQuery.albums()
+            query.addFilterPredicate(MPMediaPropertyPredicate(
+                value: albumId,
+                forProperty: MPMediaItemPropertyAlbumPersistentID
+            ))
+            if let collection = query.collections?.first,
+               let repItem = collection.representativeItem,
+               let repArtwork = repItem.artwork {
+                artwork = repArtwork.image(at: CGSize(width: 300, height: 300))
             }
-
-            // Fallback to bounds size
-            let boundsSize = artworkCatalog.bounds.size
-            if boundsSize.width > 0 && boundsSize.height > 0 {
-                return artworkCatalog.image(at: boundsSize)
-            }
-
-            return nil
-        }()
+        }
 
         let playing = player.playbackState == .playing
-        let time = player.currentPlaybackTime
-        let trackDuration = nowPlaying.playbackDuration
 
-        DispatchQueue.main.async {
-            self.musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
-            self.isPlaying = playing
-            self.currentTime = time
-            self.duration = trackDuration
-        }
+        musicInfo = MusicInfo(title: title, artist: artist, artwork: artwork, isPlaying: playing)
+        isPlaying = playing
+        currentTime = player.currentPlaybackTime
+        duration = nowPlaying.playbackDuration
     }
 
     // MARK: - Playback Controls
 
     func playPause() {
+        guard let player = player else { return }
         if player.playbackState == .playing {
             player.pause()
-        } else {
-            // If there's a current item, play it
-            if player.nowPlayingItem != nil {
-                player.play()
-            }
+        } else if player.nowPlayingItem != nil {
+            player.play()
         }
-        // Update immediately after action
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
     }
 
     func skipToNext() {
-        player.skipToNextItem()
+        guard let player = player, let nowPlaying = player.nowPlayingItem else {
+            player?.skipToNextItem()
+            return
+        }
+
+        let trackNumber = nowPlaying.albumTrackNumber
+        let trackCount = nowPlaying.albumTrackCount
+
+        if trackCount <= 1 || trackNumber >= trackCount {
+            playNextAlbum()
+        } else {
+            player.skipToNextItem()
+        }
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
     }
 
+    private func playNextAlbum() {
+        guard let libraryManager = libraryManager,
+              let player = player,
+              let currentItem = player.nowPlayingItem else { return }
+
+        let currentAlbumId = currentItem.albumPersistentID
+        let albums = libraryManager.combinedAlbums
+
+        if let currentIndex = albums.firstIndex(where: { $0.id == currentAlbumId }) {
+            let nextIndex = (currentIndex + 1) % albums.count
+            libraryManager.playAlbum(albums[nextIndex])
+        } else if let firstAlbum = albums.first {
+            libraryManager.playAlbum(firstAlbum)
+        }
+    }
+
     func skipToPrevious() {
-        player.skipToPreviousItem()
+        player?.skipToPreviousItem()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }
     }
 
     func seek(to time: TimeInterval) {
-        player.currentPlaybackTime = time
+        player?.currentPlaybackTime = time
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.updateMusicInfo()
         }

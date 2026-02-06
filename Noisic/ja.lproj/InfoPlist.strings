@@ -1,0 +1,3 @@
+/* Japanese localization for Info.plist */
+"NSAppleMusicUsageDescription" = "再生中の曲情報を表示するためにApple Musicライブラリにアクセスします。";
+"CFBundleDisplayName" = "Noisic";

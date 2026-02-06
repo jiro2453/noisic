@@ -8,12 +8,12 @@
 import Foundation
 
 enum AmbientSound: String, CaseIterable, Identifiable {
+    case bonfire = "bonfire"
     case nightRain = "night_rain"
     case nature = "nature"
+    case ocean = "ocean"
     case drive = "drive"
     case river = "river"
-    case ocean = "ocean"
-    case bonfire = "bonfire"
 
     var id: String { rawValue }
 
@@ -50,12 +50,36 @@ enum AmbientSound: String, CaseIterable, Identifiable {
     // Volume multiplier (bonfire is baseline at 1.0)
     var volumeMultiplier: Float {
         switch self {
-        case .nightRain: return 5.0
-        case .nature: return 1.7
-        case .drive: return 1.8
-        case .river: return 3.0
-        case .ocean: return 1.2
-        case .bonfire: return 1.5
+        case .nightRain: return 60.0
+        case .nature: return 12.0
+        case .drive: return 12.0
+        case .river: return 20.0
+        case .ocean: return 7.0
+        case .bonfire: return 0.7
+        }
+    }
+
+    // プレミアムコンテンツかどうか（ocean, drive, riverは課金が必要）
+    var isPremium: Bool {
+        switch self {
+        case .ocean, .drive, .river:
+            return true
+        case .bonfire, .nightRain, .nature:
+            return false
+        }
+    }
+
+    // 各サウンドのプロダクトID
+    var productId: String? {
+        switch self {
+        case .ocean:
+            return "com.noisic.sound.ocean"
+        case .drive:
+            return "com.noisic.sound.drive"
+        case .river:
+            return "com.noisic.sound.river"
+        default:
+            return nil
         }
     }
 }

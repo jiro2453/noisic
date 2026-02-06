@@ -7,22 +7,43 @@
 
 import SwiftUI
 
+// iOS 16+ ハーフモーダル対応
+struct HalfModalModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.4, *) {
+            content
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .presentationBackground(Color.white.opacity(0.7))
+        } else if #available(iOS 16.0, *) {
+            content
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+                .background(Color.white.opacity(0.7))
+        } else {
+            content
+                .background(Color.white.opacity(0.7))
+        }
+    }
+}
+
 // Custom Slider with full-width track (Float version)
 struct CustomSlider: View {
     @Binding var value: Float
     let range: ClosedRange<Float>
     let trackHeight: CGFloat = 4
     let thumbSize: CGFloat = 20
+    let barWidth: CGFloat = 180
 
     var body: some View {
         let percentage = CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound))
-        let thumbOffset = percentage * 180 // Fixed width
+        let thumbOffset = percentage * barWidth
 
         ZStack(alignment: .leading) {
             // Background track
             Rectangle()
                 .fill(Color.white.opacity(0.2))
-                .frame(width: 180, height: trackHeight)
+                .frame(width: barWidth, height: trackHeight)
                 .cornerRadius(trackHeight / 2)
 
             // Active track
@@ -37,13 +58,29 @@ struct CustomSlider: View {
                 .frame(width: thumbSize, height: thumbSize)
                 .offset(x: thumbOffset - thumbSize / 2)
         }
-        .frame(width: 180, height: 44)
+        .frame(width: barWidth + 40, height: 60)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { gesture in
+                    // フレームの左右20ptのパディングを考慮
+                    let adjustedX = gesture.location.x - 20
+                    let newPercentage = min(max(adjustedX / barWidth, 0), 1)
+                    let newValue = range.lowerBound + Float(newPercentage) * (range.upperBound - range.lowerBound)
+                    value = newValue
+                }
+        )
     }
 }
 
 struct ContentView: View {
     @EnvironmentObject var audioManager: AudioManager
-    @State private var currentIndex = 11
+    @EnvironmentObject var musicInfoReader: MusicInfoReader
+    @EnvironmentObject var libraryManager: LibraryManager
+    @EnvironmentObject var storeManager: StoreManager
+    @State private var currentIndex = 6
+    @State private var showLibraryModal = false
+    @State private var showPaywall = false
 
     private var extendedSounds: [AmbientSound] {
         AmbientSound.allCases + AmbientSound.allCases + AmbientSound.allCases
@@ -53,9 +90,17 @@ struct ContentView: View {
         currentIndex % AmbientSound.allCases.count
     }
 
+    private var currentSound: AmbientSound {
+        AmbientSound.allCases[actualIndex]
+    }
+
+    private var isCurrentSoundLocked: Bool {
+        !storeManager.isUnlocked(currentSound)
+    }
+
     var body: some View {
         ZStack {
-            // ビデオ背景
+            // ビデオ背景（有効化してテスト）
             VideoPlayerView(videoName: AmbientSound.allCases[actualIndex].videoFileName)
                 .ignoresSafeArea()
                 .id(actualIndex)
@@ -73,6 +118,13 @@ struct ContentView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
+            // ロック時の追加オーバーレイ
+            if isCurrentSoundLocked {
+                Color.black.opacity(0.5)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
+
             // Foreground Content
             VStack(spacing: 0) {
                 // Ambient Sound Icon with Navigation Arrows at Top
@@ -84,11 +136,21 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .opacity(0.4)
 
-                        Image(systemName: AmbientSound.allCases[actualIndex].icon)
-                            .font(.system(size: 36))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .opacity(0.55)
+                        ZStack {
+                            Image(systemName: currentSound.icon)
+                                .font(.system(size: 36))
+                                .foregroundColor(.white)
+                                .frame(width: 40, height: 40)
+                                .opacity(isCurrentSoundLocked ? 0.3 : 0.55)
+
+                            // ロックアイコン
+                            if isCurrentSoundLocked {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(.white)
+                                    .offset(x: 20, y: 15)
+                            }
+                        }
 
                         Image(systemName: "chevron.right")
                             .font(.system(size: 20, weight: .semibold))
@@ -109,7 +171,7 @@ struct ContentView: View {
                                 get: { audioManager.volume },
                                 set: { audioManager.setVolume($0) }
                             ),
-                            range: 1...4
+                            range: 0...4
                         )
 
                         Image(systemName: "speaker.wave.3.fill")
@@ -122,9 +184,40 @@ struct ContentView: View {
                 .padding(.top, 50)
 
                 Spacer()
+
+                // Music Player
+                ZStack {
+                    MusicPlayerView(showLibraryModal: $showLibraryModal, isLocked: isCurrentSoundLocked)
+
+                    // アンロックボタン（レコードの上に配置）
+                    if isCurrentSoundLocked {
+                        Button(action: {
+                            showPaywall = true
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "lock.open.fill")
+                                    .font(.system(size: 16))
+                                Text("UNLOCK")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .fixedSize()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 12)
+                            .background(
+                                Capsule()
+                                    .fill(Color.white.opacity(0.4))
+                            )
+                            .fixedSize()
+                        }
+                        .offset(y: -80)
+                    }
+                }
+                .padding(.bottom, 50)
             }
             .padding(.horizontal, 20)
-            .allowsHitTesting(false)
         }
         .contentShape(Rectangle())
         .gesture(
@@ -148,11 +241,28 @@ struct ContentView: View {
         .onAppear {
             audioManager.play(sound: .bonfire)
         }
+        .sheet(isPresented: $showLibraryModal) {
+            LibraryModalView(isPresented: $showLibraryModal) { album in
+                libraryManager.playAlbum(album)
+            }
+            .environmentObject(libraryManager)
+            .modifier(HalfModalModifier())
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView(isPresented: $showPaywall, targetSound: currentSound)
+                .environmentObject(storeManager)
+        }
     }
 
     private func handleIndexChange() {
         let sound = extendedSounds[currentIndex]
-        audioManager.play(sound: sound)
+
+        // ロックされているサウンドの場合は音声を停止
+        if !storeManager.isUnlocked(sound) {
+            audioManager.stop()
+        } else {
+            audioManager.play(sound: sound)
+        }
 
         let count = AmbientSound.allCases.count
         if currentIndex <= 1 {
